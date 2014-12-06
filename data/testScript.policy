@@ -1,0 +1,117 @@
+# this is the test script
+
+function mul( x, y) returnable ;
+
+function nof() returnable {
+    return 0;
+}
+
+function one( a ) returnable {
+    return 0;
+}
+
+function two( a, b) returnable {
+    return 0;
+}
+
+function three( a, b, c) returnable {
+    return 0;
+}
+
+function sub( a, b, c ) returnable {
+    return a - b - c;
+}
+
+
+function nnn() ;
+function nnn( a ) returnable ;
+
+define blabla "hello world"
+
+function init() {
+
+    3+one( nof() );
+
+    var a = 4;
+    var b = 10 + a - mul( 8, 6 ) + (3 - 7*8) +2;
+    msg( "b = " + b );
+
+    var x = -8;
+    var v = vec2( x, -10);
+    msg ( "v = " + v + " is a " + typeStr( v ) );
+    v._x = 16;
+    msg( "vector prop. v.x=" + v._x );
+
+    var s = typeStr( v._x );
+
+    msg( "typeof v._x is a " + s );
+
+    v = 4;
+
+    if ( typeof v == number ) {
+        msg( "v is a real number now" );
+    } else {
+        msg( "v is not a number" );
+    }
+
+
+
+    var d = 3+.2;
+    msg( "d: " + d);
+
+    one( 3 );
+
+    two( 4+5, one(8) );
+
+    three( one(8), 0, nof() );
+    three( nof(), 0, three(1,2, 3) );
+    three( 1, 2, 3);
+
+    nof();
+
+    msg( sub( 10, 5, 3) );
+
+    nnn();
+    nnn(4);
+
+    for ( var i = 0; i < 6; i = i + 1 ) {
+        msg( "i=" + i );
+    }
+
+    v = vec2( 11, 18);
+
+    while ( ( v._x = v._x - 1 ) >= 0 ) {
+        msg( "v=" + v );
+    }
+
+    reg z = vec2(0, 1);
+    var q = vec2( 0.1e-10, 1);
+
+    msg( "z=" + z + " q=" + q );
+
+    if ( z == q ) {
+        msg( "z is equal to q");
+    } else {
+        msg( "z is NOT equal to q");
+    }
+
+    msg( "2PI to degree: " + toDeg( 2*PI) );
+    msg( "E: " + E );
+}
+
+function run() {
+}
+
+function mul( x, y) returnable {
+    return  x* y;
+}
+
+function nnn() {
+    msg("nnn: empty version");
+}
+
+
+function nnn( a ) returnable {
+    msg("nnn: " + a );
+    return 0;
+}
