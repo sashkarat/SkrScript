@@ -4,7 +4,7 @@ package org.skr.SkrScript;
 /**
  * Created by rat on 29.11.14.
  */
-public class Stack<T> {
+ class Stack<T> {
     Object [] items;
     int size = 0;
 

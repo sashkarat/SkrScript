@@ -17,7 +17,7 @@ public class Slot {
 
     public void setScript( Script script ) {
         this.script = script;
-        registers = new RegisterPool( this.script.regNum );
+        registers = new RegisterPool( this.script.numOfReg);
     }
 
     public boolean isEnabled() {

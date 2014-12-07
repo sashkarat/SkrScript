@@ -102,7 +102,6 @@ public class Test {
     }
 
 
-
     public static void main( String [] arg ) {
         System.out.println(new File(".").getAbsoluteFile());
         File file = new File("data/testScript.policy");
@@ -135,12 +134,15 @@ public class Test {
         ee.init();
 
         Script script = new Script();
+
+//        Builder.setVerboseLevel( 4 );
+
         if ( ! Builder.build(txt, script) )
             return;
         Slot slot = new Slot();
         slot.setScript(script);
 
-        Dumper.dump(script);
+//        Dumper.dump(script);
 //        ScriptDumper.dumpBytes( SkrScript, " ");
 
         Engine engine = new Engine();

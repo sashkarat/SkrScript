@@ -52,10 +52,11 @@ public class Operators {
     }
 
     private static boolean opGetPropRef(RunContext rc) {
-        if ( ! rc.r.isPropertyCode() )
-            return printError("opGetPropRef", "rvalue is not a property", rc);
         rc.obtainLv();
         rc.obtainRv();
+        if ( ! rc.r.isPropertyCode() ) {
+            return printError("opGetPropRef", "rvalue is not a property", rc);
+        }
         rc.pr.obj.set( rc.l );
         rc.pr.prop = (Integer) rc.r.val;
         rc.l.val = rc.pr;

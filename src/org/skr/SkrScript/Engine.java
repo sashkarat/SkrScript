@@ -25,7 +25,7 @@ public class Engine {
 
     boolean exec( int startPoint, Slot slot ) {
 
-        printMsg("exec. start from: "  + startPoint );
+//        printMsg("exec. start from: "  + startPoint );
 
         rc.setSlot(slot);
         rc.reset();
@@ -36,7 +36,7 @@ public class Engine {
             return false;
         }
 
-        printMsg("exec.done");
+//        printMsg("exec.done");
         return true;
     }
 

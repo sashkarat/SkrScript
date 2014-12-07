@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SkrScript.iml" filepath="$PROJECT_DIR$/SkrScript.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SkrScriptTest/SkrScriptTest.iml" filepath="$PROJECT_DIR$/SkrScriptTest/SkrScriptTest.iml" />
     </modules>
   </component>
 </project>

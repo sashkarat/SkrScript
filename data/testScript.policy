@@ -26,7 +26,8 @@ function sub( a, b, c ) returnable {
 function nnn() ;
 function nnn( a ) returnable ;
 
-define blabla "hello world"
+define helloMsg "hello world"
+define testNumber 1e-1
 
 function init() {
 
@@ -97,6 +98,14 @@ function init() {
 
     msg( "2PI to degree: " + toDeg( 2*PI) );
     msg( "E: " + E );
+    msg( "helloMsg define: " + helloMsg );
+    msg( "testNumber define + 3: " + ( testNumber + 3 ) );
+
+    var prop = _x;
+
+    v.prop = 17;
+
+    msg ( "porp: " + prop + " v: " + v );
 }
 
 function run() {

@@ -252,7 +252,7 @@ public class RunContext {
 
         rc.pos = entryPoint;
 
-        printMsg("run", "entryPoint: " + entryPoint, rc);
+//        printMsg("run", "entryPoint: " + entryPoint, rc);
 
 
         while ( rc.hasMoreBytes() ) {
@@ -286,7 +286,7 @@ public class RunContext {
                     continue;
                 case Def.RET:
                     if ( rc.retCode < 0 ) {
-                        printMsg("run", "finalize", rc);
+//                        printMsg("run", "finalize", rc);
                         return true;
                     }
                     rc.ret( );

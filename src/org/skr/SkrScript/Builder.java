@@ -20,7 +20,7 @@ public class Builder {
         }
     }
 
-    public static class Array< T > {
+    protected static class Array< T > {
         ArrayList<T> ba = new ArrayList<T>();
         int size = 0;
 
@@ -59,9 +59,9 @@ public class Builder {
             return ba.get(i);
         }
 
-        public String toString(String delimiterStr ) {
+        public String toString(String delimiter ) {
             String s = "";
-            for ( T b : ba ) s += ( b.toString() + delimitersStr);
+            for ( T b : ba ) s += ( b.toString() + delimiter);
             return s;
         }
     }
@@ -92,8 +92,9 @@ public class Builder {
     static final ArrayList<String> keywords = new ArrayList<String>();
     static final HashMap<String, Byte > dataTypeSpec = new HashMap<String, Byte>();
     static final HashMap<Integer, FunctionDesc > bfuncMap = new HashMap<Integer, FunctionDesc>();
+    static int verboseLevel = 0;
 
-    public static final String delimitersStr = " \t\r\n+-*/<>=,;()[]{}!|&#\":.";
+    static final String delimitersStr = " \t\r\n+-*/<>=,;()[]{}!|&#\":.";
     static {
         operators.put("+", Def.OP_ADD);
         operators.put("-", Def.OP_SUB);
@@ -168,6 +169,9 @@ public class Builder {
         defines.put("E", "2.7182818");
     }
 
+    public static void setVerboseLevel( int level ) {
+        verboseLevel = level;
+    }
 
     public static boolean addExtendedDTS( byte dtsCode, String dtsString ) {
         if ( dtsCode > Def.EXTENDED_DTS_CODE ) {
@@ -240,7 +244,7 @@ public class Builder {
         return false;
     }
 
-    public static class VariableMap {
+    static class VariableMap {
         int idx = -1;
         HashMap<String, Integer > map = new HashMap<String, Integer>();
         VariableMap parentMap = null;
@@ -271,13 +275,14 @@ public class Builder {
                     idx = parentMap.idx;
             }
             map.put( name, ++idx);
-            printMsg("addVar. " + (( map == bc.rmap.map)?"<reg> " : "<var> " ) + name  +   " idx: " + idx, bc);
+            if ( verboseLevel > 1)
+                printMsg("addVar. " + (( map == bc.rmap.map)?"<reg> " : "<var> " ) + name  +   " idx: " + idx, bc);
             return true;
         }
 
     }
 
-    public static class BuildContext {
+    static class BuildContext {
 
         int lineNum = 0;
         HashMap<Integer, FunctionDesc> funcMap = new HashMap<Integer, FunctionDesc>();
@@ -293,10 +298,9 @@ public class Builder {
         byte lastSetLvDts = 0;
         byte lastOpCode = 0;
         public void putOp( byte opCode ) {
-            printMsg("putOp: " + Dumper.getOpCodeStr(opCode), this);
+            if ( Builder.verboseLevel > 2 )
+                printMsg("putOp: " + Dumper.getOpCodeStr(opCode), this);
             optimizedAdd( opCode );
-//            bytes.add(opCode);
-//            lastOpCode = opCode;
         }
 
         private void optimizedAdd(byte opCode ) {
@@ -388,8 +392,8 @@ public class Builder {
 
 
     public static boolean build( String text, Script script ) {
-
-        System.out.println( "build.started");
+        if ( verboseLevel > 0)
+            System.out.println( "build.started");
 
         BuildContext bc = new BuildContext();
 
@@ -419,12 +423,14 @@ public class Builder {
                 }
                 String defineStr = token;
                 token = nextToken( bc );
-                if ( token == null )
+                if ( token ==  null )
                     break;
-
-                if ( token.equals("\"") )
-                    token = extractString( bc );
-
+                token = readDefinitionToken( token,  bc );
+                if ( verboseLevel > 1)
+                    printMsg("Build. define: " + defineStr + " " + token, bc );
+                if ( token == null ) {
+                    break;
+                }
                 defines.put( defineStr, token );
 
             } else {
@@ -450,17 +456,17 @@ public class Builder {
         }
 
         if ( !fmapContainsName(bc.funcMap, "init") ) {
-            System.err.println("build. init function is not defined.");
+            printError("build. init function is not defined.", null);
             return false;
         }
         if ( !fmapContainsName(bc.funcMap, "run")) {
-            System.err.println("build. \"run\" function is not defined.");
+            printError("build. \"run\" function is not defined.", null);
             return false;
         }
 
         script.initPoint = bc.funcMap.get( getFunctionId( "init", (byte)0) ).address;
         script.runPoint = bc.funcMap.get( getFunctionId( "run", (byte)0) ).address;
-        script.regNum = bc.rmap.idx + 1;
+        script.numOfReg = bc.rmap.idx + 1;
 
         script.bytes = new byte[ bc.bytes.size ];
         for(int i = 0; i < bc.bytes.size; i++ )
@@ -470,16 +476,40 @@ public class Builder {
             for ( int i = 0; i < bc.strings.size; i++)
                 script.strings[i] = bc.strings.get(i);
         }
-
-        printMsg("build.success.", bc);
+        if ( verboseLevel > 0)
+            printMsg("build.success.", bc);
         return true;
     }
 
-    public static boolean isComment( String token ){
+    static String readDefinitionToken(String firstToken,  BuildContext bc ) {
+        String out = null;
+        String token = null;
+        while ( bc.tknzr.hasMoreTokens() ) {
+            if ( token == null && firstToken != null ) {
+                token = firstToken;
+            } else {
+                token = bc.tknzr.nextToken();
+            }
+            if ( isSpace( token) || isEol(token ) )
+                return out;
+
+            if ( token.charAt(0) == '\"' ) {
+                out = extractString( bc );
+                return out;
+            }
+            if ( out == null )
+                out = token;
+            else
+                out += token;
+        }
+        return null;
+    }
+
+    static boolean isComment( String token ){
         return token.equals("#") ;
     }
 
-    public static boolean isSpace( String token ) {
+    static boolean isSpace( String token ) {
         if ( token.length() == 1 ) {
             if ( token.equals(" ") || token.equals("\t") )
                 return true;
@@ -487,15 +517,15 @@ public class Builder {
         return false;
     }
 
-    public static boolean isEol( String token ) {
+    static boolean isEol( String token ) {
         return token.equals("\n");
     }
 
-    public static boolean isWord( String token ) {
+    static boolean isWord( String token ) {
         return Character.isLetter( token.charAt(0) );
     }
 
-    public static boolean isNumber( String token ) {
+    static boolean isNumber( String token ) {
         if ( !Character.isDigit( token.charAt(0)) )
             return false;
         //test conversion
@@ -656,7 +686,8 @@ public class Builder {
 
         if ( token.equals(";") ) {
             putFunction(bc.funcMap, bc.thisFunc);
-            printMsg("buildFunction. Function declaration: " + bc.thisFunc, bc);
+            if ( verboseLevel > 0 )
+                printMsg("buildFunction. Function declaration: \"" + bc.thisFunc + "\"", bc);
             return true;
         }
 
@@ -666,7 +697,8 @@ public class Builder {
         }
 
         bc.thisFunc.address = bc.bytes.size;
-        printMsg("buildFunction. Function definition: " + bc.thisFunc, bc);
+        if ( verboseLevel > 0 )
+            printMsg("\n\nbuildFunction. Function definition: \"" + bc.thisFunc + "\"", bc);
         putFunction(bc.funcMap, bc.thisFunc);
 
         for ( int i = 0; i < bc.thisFunc.numOfArg; i ++ ) {
@@ -688,10 +720,14 @@ public class Builder {
 
         if ( lastOpCode != Def.RET || secSize == 0 ) {
             if ( bc.thisFunc.returnable) {
-                printError("buildFunction. function " + bc.thisFunc + " should return a value.", bc );
+                printError("buildFunction. function \"" + bc.thisFunc + "\" should return a value.", bc );
                 return false;
             }
             bc.putOp(Def.RET);
+        }
+        if ( verboseLevel > 0 ) {
+            printMsg("buildFunction. function: \"" + bc.thisFunc + "\" definition is done.", bc);
+            printMsg("\n", null);
         }
         return true;
     }
@@ -744,7 +780,8 @@ public class Builder {
     }
 
     static boolean buildSection( VariableMap vmap, boolean createVMap, SectionBuildContext sbc ) {
-        printMsg("buildSection. ..... start", sbc.bc);
+        if ( verboseLevel > 0 )
+            printMsg("buildSection. ..... start", sbc.bc);
         if ( createVMap ) {
             VariableMap vm = new VariableMap();
             vm.parentMap = vmap;
@@ -760,7 +797,8 @@ public class Builder {
 
 //            printMsg("buildSection. token: " + token, sbc.bc);
             if ( token.equals("}") ) {
-                printMsg("buildSection. ..... finish", sbc.bc);
+                if ( verboseLevel > 0 )
+                    printMsg("buildSection. ..... finish", sbc.bc);
                 return true;
             }
             if ( token.equals("{") ) {
@@ -969,7 +1007,8 @@ public class Builder {
 
             sbc.bc.putOp(Def.JUMPF);
             int posJmpF = sbc.bc.bytes.size;
-            printMsg("buildIf. posJmpF: " + posJmpF, sbc.bc);
+            if ( verboseLevel > 1 )
+                printMsg("buildIf. posJmpF: " + posJmpF, sbc.bc);
             sbc.bc.bytes.add((byte) 0, 4);
 
             token = nextToken( sbc.bc );
@@ -1064,11 +1103,6 @@ public class Builder {
                     return null;
                 }
 
-//                if ( codeSize > 0) {
-//                    if ( bc.bytes.peek() != ScriptCodes.OBTAINLV )
-//                        bc.putOp( ScriptCodes.OBTAINLV );
-//                    bc.putOp(ScriptCodes.PUSHLV);
-//                }
                 bc.putOp(Def.RET);
             }
             return token;
@@ -1101,19 +1135,14 @@ public class Builder {
         return null;
     }
 
-    static String expressionToString( ArrayList<String> expression, String delimitersStr ) {
-        String s = "";
-        for (String anExpression : expression) s += (anExpression + delimitersStr);
-        return s;
-    }
-
     static String buildExpression(String firstToken, VariableMap vmap, BuildContext bc, boolean breakOnComma ) {
 
         Array<String> expression = new Array<String>();
         String token = tokenizeExpression( firstToken, bc, expression, breakOnComma );
         if ( token == null )
             return null;
-        printMsg("\nbuildExpression. expression:\t\t\t" + expression.toString(" "), bc );
+        if ( verboseLevel > 0 )
+            printMsg("\n buildExpression. >>>>>>>>>>:\t\t\t[ " + expression.toString(" ") + "]", bc );
 
         if ( ! compileExpression( expression, vmap, bc) )
             return null;
@@ -1140,11 +1169,11 @@ public class Builder {
                 token = bc.tknzr.nextToken();
             }
 
+            if ( verboseLevel > 3)
+                printMsg("tokenizeExpression. token: " + token, bc);
+
             if ( defines.containsKey( token ) )
                 token = defines.get( token );
-
-
-//            printMsg("tokenizeExpression. token: " + token, bc);
 
             String prevToken = null;
             if ( expression.size > 0 )
@@ -1195,7 +1224,8 @@ public class Builder {
 
                 if (isNumber(token)) {
                     // 0.2e'4' or .'4'
-                    printMsg("tokenizeExpression. isNumber: " + " lch: " + lch, bc);
+                    if ( verboseLevel > 2)
+                        printMsg("tokenizeExpression. isNumber: " + " lch: " + lch, bc);
                     if (lch == 'E' || lch == 'e' || lch == '.'
                             || (lch == '-' && prevToken.length() > 1) ) {
                         expression.add(expression.pop() + token);
@@ -1364,6 +1394,8 @@ public class Builder {
         }
 
         void dumpStacks() {
+            if ( verboseLevel < 3 )
+                return;
             System.out.print("ExpressionCompilingContext. dumpStacks:\n*...oStack[ ");
             for ( int i = 0; i < oStack.size ; i++ ) {
                 System.out.print(oStack.get( i ));
@@ -1392,8 +1424,8 @@ public class Builder {
             if ( token.isEmpty() )
                 continue;
             boolean fcall = ( fmapContainsName(bfuncMap, token) || fmapContainsName(bc.funcMap, token) );
-
-//            printMsg("cE. token: " + token, bc);
+            if ( verboseLevel > 3 )
+                printMsg("  cE. token: " + token, bc);
 
             if ( operators.containsKey(token) || fcall ) {
                 byte opCode;
@@ -1401,8 +1433,8 @@ public class Builder {
                     opCode =  correctOpCodeToUnary( prevOpCode, operators.get(token) );
                 else
                     opCode = Def.OP_F_CALL;
-
-                printMsg("cE. opCode: " + getOpName( opCode) + " prevOpCode: " + getOpName( prevOpCode ), bc);
+                if ( verboseLevel > 1 )
+                    printMsg("  cE. opCode: " + getOpName( opCode) + " prevOpCode: " + getOpName( prevOpCode ), bc);
 
                 if ( Def.isLvalueAsVarRequired( opCode ) && ecc.prevOperatorCode() == Def.OP_GET_PROP ) {
                     ecc.wStack.pop();
@@ -1428,9 +1460,10 @@ public class Builder {
                         return false;
                     }
                     ecc.fStack.push(token);
-                    printMsg("cE. _push operator: _fcall <" + token + "> prio: " + prio + " prevPrio: " + prevPrio, bc);
-                } else {
-                    printMsg("cE. _push operator: " + getOpName(opCode) + " (" + opCode + ")" +
+                    if ( verboseLevel > 1)
+                        printMsg("  cE. _push operator: _fcall <" + token + "> prio: " + prio + " prevPrio: " + prevPrio, bc);
+                } else if ( verboseLevel > 1 ) {
+                    printMsg("  cE. _push operator: " + getOpName(opCode) + " (" + opCode + ")" +
                             " prio: " + prio + " prevPrio: " + prevPrio, bc);
                 }
                 continue;
@@ -1439,12 +1472,14 @@ public class Builder {
             if (token.equals("(") ) {
                 ecc.pushParenthesis();
                 prevOpCode = 0;
-                printMsg("cE. push \'(\' (push op -1)", bc);
+                if ( verboseLevel > 1)
+                    printMsg("  cE. push \'(\' (push op -1)", bc);
                 continue;
             }
 
             if ( token.equals(")") ) {
-                printMsg("cE. parse \')\'", bc);
+                if ( verboseLevel > 1 )
+                    printMsg("  cE. parse \')\'", bc);
                 if ( ! collapseStacks( ecc, (byte) 126 ) )
                     return false;
                 prevOpCode = Def.DTS_NUMBER;
@@ -1452,21 +1487,24 @@ public class Builder {
             }
 
             ecc.pushOperand( token );
-            printMsg("cE. push token: " + token + " oS:" + ecc.oStack.size, bc);
+            if ( verboseLevel > 1 )
+                printMsg("  cE. push token: " + token + " oS:" + ecc.oStack.size, bc);
             prevOpCode = Def.DTS_NUMBER;
         }
         return collapseStacks( ecc, (byte) 127);
     }
 
     static boolean collapseStacks( ExpressionCompilingContext ecc, byte targetPrio ) {
-        printMsg("      cS>. Start. target prio: " + targetPrio, ecc.bc);
+        if ( verboseLevel > 1 )
+            printMsg("      cS>. Start. target prio: " + targetPrio, ecc.bc);
         ecc.dumpStacks();
 //        int codeSize = ecc.bc.bytes.size;
 
         while ( !ecc.wStack.isEmpty() ) {
             byte prio = ecc.pStack.peek();
             if ( prio >  targetPrio ) {
-                printMsg("      cS>. Finish (prio compared)", ecc.bc);
+                if ( verboseLevel > 1 )
+                    printMsg("      cS>. Finish (prio compared)", ecc.bc);
                 ecc.dumpStacks();
                 return true;
             }
@@ -1476,16 +1514,16 @@ public class Builder {
                 // pop operator: -1 with priority: 126
                 ecc.wStack.pop();
                 ecc.pStack.pop();
-                printMsg("      cS>. Finish _pop op: (" + " prio: " + prio, ecc.bc);
+                if ( verboseLevel > 1 )
+                    printMsg("      cS>. Finish _pop op: (" + " prio: " + prio, ecc.bc);
                 ecc.dumpStacks();
                 return true;
             }
 
             ecc.pStack.pop();
             byte opCode = ecc.wStack.pop();
-
-            printMsg("      cS>. _pop op: " + getOpName(opCode) + " prio: " + prio, ecc.bc );
-
+            if ( verboseLevel > 1 )
+                printMsg("      cS>. _pop op: " + getOpName(opCode) + " prio: " + prio, ecc.bc );
 
             //all operators have an rvalue, except function call ;
             if ( opCode != Def.OP_F_CALL ) {
@@ -1527,7 +1565,8 @@ public class Builder {
                     if ( addr < 0 )
                         ecc.bc.fcallAddrStack.push( new Triple<String, Byte, Integer>( fname, ecc.fcallArgCntr, ecc.bc.bytes.size ) );
                 }
-                printMsg("      cS>. fcall: " + fname + " addr: " + addr + " arg cntr: " + ecc.fcallArgCntr, ecc.bc);
+                if ( verboseLevel > 1 )
+                    printMsg("      cS>. fcall: " + fname + " addr: " + addr + " arg cntr: " + ecc.fcallArgCntr, ecc.bc);
                 putInt(addr, ecc.bc.bytes);
                 ecc.bc.bytes.add( ecc.fcallArgCntr );
 
@@ -1540,19 +1579,21 @@ public class Builder {
                 // function without arguments, but it returns a value maybe
                 if ( ecc.fcallArgCntr == 0 ) {
                     ecc.pushOperand( null );
-                    printMsg("      cS>. *' push null." + " oStackSize: " + ecc.oStack.size, ecc.bc);
+                    if ( verboseLevel > 1 )
+                        printMsg("      cS>. *' push null." + " oStackSize: " + ecc.oStack.size, ecc.bc);
                 }
 
                 ecc.bc.lastCalledFunc = fname;
                 ecc.pushlvReqMode--;
                 ecc.fcallArgCntr = ecc.fcallArgCntrStack.pop();
             } else {
-                printMsg("      cS>. finish op collapse: " + Dumper.getOpCodeStr(opCode) +
-                " pushlvReqMode: " + ecc.pushlvReqMode + " wS.s " + ecc.wStack.size, ecc.bc);
+                if ( verboseLevel > 1 )
+                    printMsg("      cS>. finish op collapse: " + Dumper.getOpCodeStr(opCode) +
+                             " pushlvReqMode: " + ecc.pushlvReqMode + " wS.s " + ecc.wStack.size, ecc.bc);
                 ecc.pushOperand(null);
-                printMsg("      cS>. *  push null." + " oStackSize: " + ecc.oStack.size, ecc.bc);
+                if ( verboseLevel > 1 )
+                    printMsg("      cS>. *  push null." + " oStackSize: " + ecc.oStack.size, ecc.bc);
                 ecc.dumpStacks();
-
             }
             // zero operator makes this operation with the rvalue
             if ( opCode != 0 ) {
@@ -1564,15 +1605,16 @@ public class Builder {
         }
 
         if ( targetPrio < 127) {
-//            printMsg("cS>. " + ecc.bc.bytes.toString(" "), ecc.bc);
-            printMsg("      cs. Finish.  ", ecc.bc);
+            if ( verboseLevel > 1 )
+                printMsg("      cs. Finish.  ", ecc.bc);
             ecc.dumpStacks();
             return true;
         }
         // clean up oStack after the final collapse
         if ( !cleanUpOStack( ecc ) )
             return false;
-        printMsg("      cs. Finish (final).  ", ecc.bc);
+        if ( verboseLevel > 1 )
+            printMsg("      cs. Finish (final).  ", ecc.bc);
         ecc.dumpStacks();
 //        printMsg("cS>. " + ecc.bc.bytes.toString(" "), ecc.bc);
         return true;
@@ -1597,8 +1639,9 @@ public class Builder {
         }
 
         String val = ecc.oStack.pop();
-        printMsg("              setupValue. pop " + msgVal + ": " + val + " oS:" + ecc.oStack.size +
-                " pushlvReqMode: " + ecc.pushlvReqMode, ecc.bc );
+        if ( verboseLevel > 1 )
+            printMsg("              setupValue. pop " + msgVal + ": " + val + " oS:" + ecc.oStack.size +
+                        " pushlvReqMode: " + ecc.pushlvReqMode, ecc.bc );
         if ( val != null ) {
             ecc.bc.putOp( setOpCode );
             if ( ! putVal( val, ecc, ( ecc.pushlvReqMode > 0 ), (valueCode == 0), ecc.bc ) )
@@ -1612,7 +1655,8 @@ public class Builder {
     static public boolean cleanUpOStack( ExpressionCompilingContext ecc ) {
         while ( ! ecc.oStack.isEmpty() ) {
             String token = ecc.oStack.pop();
-            printMsg("              cleanUpOStack>. pop: " + token + " oS:" + ecc.oStack.size , ecc.bc );
+            if ( verboseLevel > 1 )
+                printMsg("              cleanUpOStack>. pop: " + token + " oS:" + ecc.oStack.size , ecc.bc );
             if ( token == null ) {
 //                ecc.bc.putOp(ScriptCodes.PUSHLV );
                 return true;
