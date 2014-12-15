@@ -5,73 +5,199 @@ package org.skr.SkrScript;
  */
 public class BuildInFunctions {
 
-    private static final RegisterPool args = new RegisterPool( 4 );
+    private static final RegisterPool args = new RegisterPool( 5 );
+
+    static {
+
+        FunctionPool.setAdapter( Def.F_MSG, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return msg( rc );
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ERR, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return err(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_SET_SLOT_ENABLED, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return setSlotEnabled(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_TYPE_TO_STR, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return typeToStr(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_SIN, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return sin(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_COS, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return cos(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_TAN, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return tan(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ACOS, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return acos(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ASIN, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return asin(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ATAN, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return atan(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_CBRT, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return cbrt(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_SQRT, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return sqrt(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_EXP, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return exp(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_HYPOT, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return hypot(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_POW, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return pow(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_LOG, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return log(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_LOG10, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return log10(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_MAX, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return max(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_MIN, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return min(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_RANDOM, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return random(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_TO_DEGREES, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return toDeg(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_TO_RADIANS, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return toRad(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ABS, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return abs(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_FLOOR, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return floor(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_CEIL, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return ceil(rc);
+            }
+        } );
+
+        FunctionPool.setAdapter( Def.F_ROUND, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                return round(rc);
+            }
+        } );
+    }
 
     public static boolean call( int addr, RunContext rc, byte numOfArg ) {
-
-        for ( int i = numOfArg - 1; i >= 0; i--) {
+//        printMsg("call", "addr: " + addr + " numOfArg: " + numOfArg, rc );
+        for (int i = numOfArg - 1; i >= 0; i--)
             rc.popArg(args, i);
-        }
-
-        switch ( addr ) {
-            case Def.F_MSG:
-                return msg(rc);
-            case Def.F_ERR:
-                return err( rc );
-            case Def.F_SET_SLOT_ENABLED:
-                return setSlotEnabled(rc);
-            case Def.F_TYPE_TO_STR:
-                return typeToStr( rc );
-            case Def.F_SIN:
-                return sin( rc );
-            case Def.F_COS:
-                return cos( rc );
-            case Def.F_TAN:
-                return tan( rc );
-            case Def.F_ACOS:
-                return acos( rc );
-            case Def.F_ASIN:
-                return asin( rc );
-            case Def.F_ATAN:
-                return atan( rc );
-            case Def.F_CBRT:
-                return cbrt( rc );
-            case Def.F_SQRT:
-                return sqrt( rc );
-            case Def.F_EXP:
-                return exp( rc );
-            case Def.F_HYPOT:
-                return hypot( rc );
-            case Def.F_POW:
-                return pow( rc );
-            case Def.F_LOG:
-                return log( rc );
-            case Def.F_LOG10:
-                return log10( rc );
-            case Def.F_MAX:
-                return max( rc );
-            case Def.F_MIN:
-                return min( rc );
-            case Def.F_RANDOM:
-                return random( rc );
-            case Def.F_TO_DEGREES:
-                return toDeg( rc );
-            case Def.F_TO_RADIANS:
-                return toRad( rc );
-            case Def.F_ABS:
-                return abs( rc );
-            case Def.F_FLOOR:
-                return floor( rc );
-            case Def.F_CEIL:
-                return ceil( rc );
-            case Def.F_ROUND:
-                return round( rc );
-            default:
-                if ( rc.extension != null ) {
-                    return rc.extension.buildInFunc( addr, args, numOfArg, rc.l, rc);
-                }
-        }
-        return printError("BuildInFunctions.call", "Unknown address: " + addr, rc);
+        FunctionPool.Adapter adapter = FunctionPool.getAdapter(addr);
+        return adapter != null && adapter.act(args, numOfArg, rc.l, rc);
     }
 
     private static boolean round(RunContext rc) {
@@ -263,6 +389,9 @@ public class BuildInFunctions {
                 break;
             case Def.DTS_TYPE:
                 rc.l.val = "TYPE";
+                break;
+            case Def.DTS_PROP_CODE:
+                rc.l.val = "PROP_CODE";
                 break;
             default:
                 if ( rc.extension != null ) {

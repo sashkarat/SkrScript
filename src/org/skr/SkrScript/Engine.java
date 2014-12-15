@@ -13,30 +13,35 @@ public class Engine {
 
     public void setExtension( EngineExtension extension ) {
         this.extension = extension;
+        extension.setup();
     }
 
     public boolean init( Slot slot ) {
-        return exec(slot.script.initPoint, slot);
+        return slot.script == null || exec(slot.script.initPoint, slot);
     }
 
-    public boolean exec( Slot slot ) {
-        return exec( slot.script.runPoint, slot );
+    public boolean run(Slot slot) {
+        return slot.script == null || exec(slot.script.runPoint, slot);
     }
 
     boolean exec( int startPoint, Slot slot ) {
 
-//        printMsg("exec. start from: "  + startPoint );
+//        printMsg("run. start from: "  + startPoint );
+
+        if ( ! (slot.enabled && slot.script.enabled )  )
+            return true;
 
         rc.setSlot(slot);
         rc.reset();
         rc.setExtension( extension );
 
         if ( !RunContext.run(startPoint, rc) ) {
-            printError("exec. failed", rc);
+            printError("SkrScriptEngine. script execution failed. Script will be disabled.", rc);
+            slot.script.enabled = false;
             return false;
         }
 
-//        printMsg("exec.done");
+//        printMsg("run.done");
         return true;
     }
 

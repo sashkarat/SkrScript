@@ -9,4 +9,5 @@ public class Script {
     public int runPoint = -1;
     public int numOfReg = 0;
     public String [] strings;
+    public boolean enabled = true;
 }

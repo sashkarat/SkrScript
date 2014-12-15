@@ -38,46 +38,9 @@ public class Test {
             Builder.addExtendedBuildInFunction("vec2", (byte)2, true, F_CRT_VEC );
         }
 
-        @Override
-        protected boolean opArithmetic(byte opCode, RunContext rc) {
-            return false;
-        }
 
         @Override
-        protected boolean getProperty(Value obj, int propCode, Value result, RunContext rc) {
-
-            if ( obj.dts != DTS_VECTOR2 )
-                return false;
-            Vector2 v = (Vector2) obj.val;
-            if ( propCode == PROP_X ) {
-                result.setAsNumber( v.x );
-                return true;
-            }
-
-            if ( propCode == PROP_Y ) {
-                result.setAsNumber( v.y );
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        protected boolean setProperty(RunContext.PropertyRef pr, Value v, RunContext rc) {
-            if ( pr.obj.dts != DTS_VECTOR2 )
-                return false;
-            if ( !v.isNumber() )
-                return false;
-            Vector2 vec = (Vector2) pr.obj.val;
-
-            if ( pr.prop == PROP_X ) {
-                vec.x = (Float) v.val;
-                return true;
-            }
-
-            if ( pr.prop == PROP_Y ) {
-                vec.y = (Float) v.val;
-                return true;
-            }
+        protected boolean opArithmetic(byte opCode, Value l, Value r, Value res, RunContext rc) {
             return false;
         }
 
@@ -89,15 +52,53 @@ public class Test {
         }
 
         @Override
-        protected boolean buildInFunc(int address, RegisterPool args, int numOfArgs, Value result, RunContext rc) {
+        protected boolean typeCast(Value value, byte dstDts, RunContext rc) {
+            return false;
+        }
 
-            if ( address != F_CRT_VEC )
-                return false;
+        @Override
+        protected void setup() {
 
-            result.val = new Vector2( (Float) args.getValue(0), (Float) args.getValue(1));
-            result.dts = DTS_VECTOR2;
+            setBuildInFunction(F_CRT_VEC, new FunctionPool.Adapter() {
+                @Override
+                public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                    res.val = new Vector2( (Float) args.getValue(0), (Float) args.getValue(1));
+                    res.dts = DTS_VECTOR2;
+                    return true;
+                }
+            });
 
-            return true;
+            setProperty(PROP_X, DTS_VECTOR2, new PropertyPool.Adapter() {
+                @Override
+                public boolean get(Value obj, Value res, RunContext rc) {
+                    Float x = ((Vector2) obj.val).x;
+                    res.setAsNumber( x );
+                    return true;
+                }
+
+                @Override
+                public boolean set(Value obj, Value value, RunContext rc) {
+                    ((Vector2) obj.val).x = (Float) value.val;
+                    return true;
+                }
+            });
+
+            setProperty(PROP_Y, DTS_VECTOR2, new PropertyPool.Adapter() {
+                @Override
+                public boolean get(Value obj, Value res, RunContext rc) {
+                    Float y = ((Vector2) obj.val).y;
+                    res.setAsNumber( y );
+                    return true;
+                }
+
+                @Override
+                public boolean set(Value obj, Value value, RunContext rc) {
+                    ((Vector2) obj.val).y = (Float) value.val;
+                    return true;
+                }
+            });
+
+
         }
     }
 
@@ -135,18 +136,21 @@ public class Test {
 
         Script script = new Script();
 
-//        Builder.setVerboseLevel( 4 );
+        Builder.setVerboseLevel( 3 );
 
         if ( ! Builder.build(txt, script) )
             return;
         Slot slot = new Slot();
         slot.setScript(script);
 
-//        Dumper.dump(script);
+        Dumper.dump(script);
 //        ScriptDumper.dumpBytes( SkrScript, " ");
 
         Engine engine = new Engine();
         engine.setExtension( ee );
+
+
+        System.out.println("Init point: " + slot.getScript().initPoint);
 
         engine.init(slot);
 

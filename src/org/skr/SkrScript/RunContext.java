@@ -63,6 +63,10 @@ public class RunContext {
         this.regs = slot.registers;
     }
 
+    public Slot getSlot() {
+        return slot;
+    }
+
     public void reset() {
         pos = 0;
         vars.offset =  0 ;
@@ -142,6 +146,7 @@ public class RunContext {
     }
 
     protected void popArg( RegisterPool args, int index ) {
+
         args.set( dataStack.pop(), dtsStack.pop(), index);
     }
 
@@ -240,6 +245,10 @@ public class RunContext {
         }
     }
 
+    protected static void printError( String msg, RunContext rc ) {
+        System.err.println("ERROR. ScriptRunContext"+ "<" + (rc.opPos) + "> " + " " + msg);
+    }
+
     protected static void printError( String fname, String msg, RunContext rc ) {
         System.err.println("ERROR. ScriptRunContext"+ "<" + (rc.opPos) + "> " + fname + " " + msg);
     }
@@ -335,6 +344,21 @@ public class RunContext {
         return false;
     }
 
+    public static boolean checkArgNumber(RunContext rc,  int numOfArgs, int noaMin, int noaMax ) {
+        if (numOfArgs < noaMin || numOfArgs > noaMax ) {
+            printError( "Invalid arguments count", rc );
+            return false;
+        }
+        return true;
+    }
 
-
+    public static boolean checkArgTypes(RunContext rc,  RegisterPool args, byte ... dts ) {
+        for ( int i = 0; i < dts.length; i++) {
+            if (args.getDts(i) != dts[i]) {
+                printError("Argument " + i + " type mismatch", rc);
+                return false;
+            }
+        }
+        return true;
+    }
 }

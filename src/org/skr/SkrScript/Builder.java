@@ -66,11 +66,11 @@ public class Builder {
         }
     }
 
-    protected static class FunctionDesc {
-        String name;
-        byte numOfArg;
-        boolean returnable;
-        int address;
+    public static class FunctionDesc {
+        public String name;
+        public byte numOfArg;
+        public boolean returnable;
+        public int address;
 
         public FunctionDesc(String name, byte numOfArg, boolean returnable, int address) {
             this.name = name;
@@ -87,11 +87,11 @@ public class Builder {
 
 
     static final HashMap<String, Byte > operators = new HashMap<String, Byte>();
-    static final HashMap<String, String > defines = new HashMap<String, String>();
     static final HashMap<String, Integer > properties = new HashMap<String, Integer>();
     static final ArrayList<String> keywords = new ArrayList<String>();
     static final HashMap<String, Byte > dataTypeSpec = new HashMap<String, Byte>();
     static final HashMap<Integer, FunctionDesc > bfuncMap = new HashMap<Integer, FunctionDesc>();
+    static final HashMap<String, String > defines = new HashMap<String, String>();
     static int verboseLevel = 0;
 
     static final String delimitersStr = " \t\r\n+-*/<>=,;()[]{}!|&#\":.";
@@ -135,6 +135,8 @@ public class Builder {
         keywords.add("false");
         keywords.add("returnable");
         keywords.add("define");
+        keywords.add("var");
+        keywords.add("reg");
 
         putFunction(bfuncMap, "msg", (byte) 1, false, Def.F_MSG);
         putFunction(bfuncMap, "err", (byte) 1, false, Def.F_ERR);
@@ -169,6 +171,38 @@ public class Builder {
         defines.put("E", "2.7182818");
     }
 
+    public static HashMap<String, Byte> getOperators() {
+        return operators;
+    }
+
+    public static HashMap<String, String> getDefines() {
+        return defines;
+    }
+
+    public static HashMap<String, Integer> getProperties() {
+        return properties;
+    }
+
+    public static ArrayList<String> getKeywords() {
+        return keywords;
+    }
+
+    public static HashMap<String, Byte> getDataTypeSpec() {
+        return dataTypeSpec;
+    }
+
+    public static HashMap<Integer, FunctionDesc> getBfuncMap() {
+        return bfuncMap;
+    }
+
+    public static int getVerboseLevel() {
+        return verboseLevel;
+    }
+
+    public static String getDelimitersStr() {
+        return delimitersStr;
+    }
+
     public static void setVerboseLevel( int level ) {
         verboseLevel = level;
     }
@@ -179,7 +213,7 @@ public class Builder {
             return false;
         }
 
-        if ( isTokenInUsage( dtsString ) ) {
+        if ( isTokenInUsage( dtsString, null ) ) {
             printError("Builder.addExtendedDTS. Such a DTS is already defined: " + dtsString , null);
             return false;
         }
@@ -187,8 +221,17 @@ public class Builder {
         return true;
     }
 
+    public static boolean addExtendedDefine(String defineStr, String value ) {
+        if ( defines.containsKey( defineStr ) ) {
+            printError("Builder.addExtendedDefine. " + defineStr + " is already defined", null );
+            return false;
+        }
+        defines.put( defineStr, value );
+        return true;
+    }
+
     public static boolean addExtendedProperty( Integer propertyCode, String properyString ) {
-        if ( isTokenInUsage( properyString) ) {
+        if ( isTokenInUsage( properyString, null) ) {
             printError("Builder.addExtendedProperty. Property: " + properyString + " could not be added.", null );
             return false;
         }
@@ -214,10 +257,10 @@ public class Builder {
         return true;
     }
 
-    protected static boolean isTokenInUsage( String token ) {
+    protected static boolean isTokenInUsage( String token, BuildContext bc ) {
         return keywords.contains( token ) || fmapContainsName( bfuncMap, token )
                 || properties.containsKey( token ) || dataTypeSpec.containsKey( token ) ||
-                defines.containsKey( token );
+                ((bc != null) && bc.defines.containsKey(token) || defines.containsKey( token ) );
     }
 
     protected static int getFunctionId( String name, Byte argNum ) {
@@ -236,7 +279,7 @@ public class Builder {
         fmap.put(id, fdesc );
     }
 
-    protected static boolean fmapContainsName( HashMap<Integer, FunctionDesc > fmap, String name ) {
+    public static boolean fmapContainsName( HashMap<Integer, FunctionDesc > fmap, String name ) {
         for ( Integer key : fmap.keySet() ) {
             if ( fmap.get( key).name.equals( name ) )
                 return true;
@@ -262,7 +305,7 @@ public class Builder {
         }
 
         boolean addVar(String name, BuildContext bc) {
-            if ( !isWord( name ) || Builder.isTokenInUsage( name ) ) {
+            if ( !isWord( name ) || Builder.isTokenInUsage( name, bc ) ) {
                 printError("addVar. Wrong variable name: " + name , bc);
                 return false;
             }
@@ -287,6 +330,7 @@ public class Builder {
         int lineNum = 0;
         HashMap<Integer, FunctionDesc> funcMap = new HashMap<Integer, FunctionDesc>();
         Stack<Triple<String, Byte, Integer>> fcallAddrStack = new Stack<Triple<String, Byte, Integer>>(2);
+        HashMap<String, String > defines;
 
         Array<Byte> bytes = new Array<Byte>();
         VariableMap rmap = new VariableMap();
@@ -297,6 +341,12 @@ public class Builder {
         byte lastSetRvDts = 0;
         byte lastSetLvDts = 0;
         byte lastOpCode = 0;
+
+        public BuildContext() {
+            defines = new HashMap<String, String>();
+            this.defines.putAll( Builder.defines );
+        }
+
         public void putOp( byte opCode ) {
             if ( Builder.verboseLevel > 2 )
                 printMsg("putOp: " + Dumper.getOpCodeStr(opCode), this);
@@ -417,7 +467,7 @@ public class Builder {
                 token = nextToken( bc );
                 if ( token == null )
                     break;
-                if ( !isWord( token ) || isTokenInUsage( token ) ) {
+                if ( !isWord( token ) || isTokenInUsage( token, null ) ) {
                     printError("build. define: token is already in usage", bc );
                     return false;
                 }
@@ -431,7 +481,7 @@ public class Builder {
                 if ( token == null ) {
                     break;
                 }
-                defines.put( defineStr, token );
+                bc.defines.put( defineStr, token );
 
             } else {
                 printError("build. Unexpected token: " + token, bc);
@@ -490,8 +540,13 @@ public class Builder {
             } else {
                 token = bc.tknzr.nextToken();
             }
-            if ( isSpace( token) || isEol(token ) )
+            if ( isSpace( token ) )
                 return out;
+
+            if ( isEol( token ) ) {
+                bc.lineNum++;
+                return out;
+            }
 
             if ( token.charAt(0) == '\"' ) {
                 out = extractString( bc );
@@ -847,6 +902,26 @@ public class Builder {
                 }
             }
 
+            boolean addReturn = false;
+
+            if ( token.equals("return") ) {
+                addReturn = true;
+
+                token = nextToken( sbc.bc );
+                if ( token == null )
+                    return false;
+
+                if ( token.equals(";") && sbc.bc.thisFunc.returnable ) {
+                    printError("Builder.buildSection. Function: " + sbc.bc.thisFunc + " should return a value",
+                            sbc.bc );
+                    return false;
+                } else if ( !token.equals(";") && !sbc.bc.thisFunc.returnable ) {
+                    printError("Builder.buildSection. Function: " + sbc.bc.thisFunc + " is not returnable",
+                            sbc.bc );
+                    return false;
+                }
+
+            }
 
             token = buildExpression( token, vmap, sbc.bc ) ;
             if ( token == null )
@@ -854,6 +929,10 @@ public class Builder {
             if ( !token.equals(";") ) {
                 printError("buildSection. Unexpected end of expression: " + token, sbc.bc);
                 return false;
+            }
+
+            if ( addReturn ) {
+                sbc.bc.putOp( Def.RET );
             }
         }
         printError("buildSection. Error occurred  when section parsed", sbc.bc);
@@ -1056,8 +1135,6 @@ public class Builder {
 
     static String buildExpression( String firstToken, VariableMap vmap, BuildContext bc ) {
 
-        boolean addReturn = false;
-
         String token = firstToken;
         if ( token == null )
             token = nextToken( bc );
@@ -1076,37 +1153,14 @@ public class Builder {
             }
             tmap = bc.rmap;
         }
-        if ( token.equals("return") ) {
-            addReturn = true;
-            token = nextToken( bc );
-            if ( token == null )
-                return null;
-        }
+
 
         // there are no var and no reg instructions before the expression
         if ( tmap == null ) {
-            int codeSize = bc.bytes.size;
             token =  buildExpression(token, vmap, bc, false);
             if ( token == null)
                 return null;
-            codeSize = bc.bytes.size - codeSize;
-
-            if ( addReturn ) {
-
-                if ( bc.thisFunc.returnable && codeSize == 0 ) {
-                    printError("buildExpression. function " + bc.thisFunc + " should return a value.", bc );
-                    return null;
-                }
-
-                if ( ! bc.thisFunc.returnable && codeSize > 0 ) {
-                    printError("buildExpression. function " + bc.thisFunc + " should not return a value.", bc );
-                    return null;
-                }
-
-                bc.putOp(Def.RET);
-            }
             return token;
-
         }
 
         // process variable definition and variable initialization instructions
@@ -1147,7 +1201,7 @@ public class Builder {
         if ( ! compileExpression( expression, vmap, bc) )
             return null;
         // remove PUSHLV at the end of expression
-        if ( bc.getLastOpCode() == Def.PUSHLV )
+        if ( bc.getLastOpCode() == Def.PUSHLV && bc.bytes.peek() == Def.PUSHLV )
             bc.bytes.pop();
         return token;
     }
@@ -1172,8 +1226,8 @@ public class Builder {
             if ( verboseLevel > 3)
                 printMsg("tokenizeExpression. token: " + token, bc);
 
-            if ( defines.containsKey( token ) )
-                token = defines.get( token );
+            if ( bc.defines.containsKey( token ) )
+                token = bc.defines.get( token );
 
             String prevToken = null;
             if ( expression.size > 0 )
@@ -1427,6 +1481,11 @@ public class Builder {
             if ( verboseLevel > 3 )
                 printMsg("  cE. token: " + token, bc);
 
+            if ( prevOpCode == Def.OP_F_CALL && !token.equals("(") ) {
+                printError("Buidl.compileExpression: \'(\' expected when calling function.", bc);
+                return false;
+            }
+
             if ( operators.containsKey(token) || fcall ) {
                 byte opCode;
                 if ( !fcall )
@@ -1554,9 +1613,8 @@ public class Builder {
 
             if ( opCode == Def.OP_F_CALL ) {
                 String fname = ecc.fStack.pop();
-                int addr = 0;
+                int addr = -16500;
                 int fid = getFunctionId( fname, ecc.fcallArgCntr );
-
                 if ( bfuncMap.containsKey( fid ) ) {
                     addr = bfuncMap.get( fid ).address;
                 } else if ( ecc.bc.funcMap.containsKey( fid ) ) {
@@ -1564,6 +1622,10 @@ public class Builder {
                     addr = fdes.address;
                     if ( addr < 0 )
                         ecc.bc.fcallAddrStack.push( new Triple<String, Byte, Integer>( fname, ecc.fcallArgCntr, ecc.bc.bytes.size ) );
+                } else {
+                    printError("collapseStacks. Undefined function call: " + fname + "( number of arguments: " +
+                    ecc.fcallArgCntr + ")", ecc.bc);
+                    return false;
                 }
                 if ( verboseLevel > 1 )
                     printMsg("      cS>. fcall: " + fname + " addr: " + addr + " arg cntr: " + ecc.fcallArgCntr, ecc.bc);

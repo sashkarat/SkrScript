@@ -23,6 +23,10 @@ function sub( a, b, c ) returnable {
 }
 
 
+function getTestString() returnable {
+    return "testString";
+}
+
 function nnn() ;
 function nnn( a ) returnable ;
 
@@ -105,7 +109,27 @@ function init() {
 
     v.prop = 17;
 
-    msg ( "porp: " + prop + " v: " + v );
+    msg ( "prop: " + prop + " v: " + v );
+
+    msg( "get Test String: " + getTestString() + "" );
+
+    if ( typeof v != VECTOR2 ) {
+        err(" v is not a vector " ) ;
+    } else {
+        msg( "v is a vector " );
+    }
+
+    if ( 4 == "4.0" ) {
+        msg("4 as number equals 4 as string");
+    }
+
+
+    if ( true ) {
+        setSlotEnabled( false );
+        return;
+    }
+
+    msg( "never calls" );
 }
 
 function run() {

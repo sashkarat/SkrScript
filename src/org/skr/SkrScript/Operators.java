@@ -83,9 +83,12 @@ public class Operators {
     }
 
     public static boolean opTypeOf( RunContext rc ) {
-        rc.obtainRv( );
+//        printMsg("opTypeOf: ", "rv: " + rc.r, rc);
+        rc.obtainRv();
+//        printMsg("opTypeOf: ", "obtained rv: " + rc.r, rc);
         rc.l.dts = Def.DTS_TYPE;
         rc.l.val = rc.r.dts;
+//        printMsg("opTypeOf: ", "lv: " + rc.l, rc);
         return true;
     }
 
@@ -106,24 +109,27 @@ public class Operators {
                     return false;
                 }
                 rc.l.dts = Def.DTS_STRING;
-                rc.l.val = rc.l.val + ( ( rc.r.val == null) ? "null": rc.r.val.toString() );
+                if ( !rc.r.isString() )
+                    TypeCast.cast(rc.r, Def.DTS_STRING, rc);
+                rc.l.val = (String)rc.l.val + rc.r.val;
                 return true;
             case Def.DTS_TYPE:
             case Def.DTS_BOOL:
             case Def.DTS_NULL:
                 return printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
         }
-        if ( rc.extension != null ) {
-            return rc.extension.opArithmetic( opCode, rc );
-        }
+        if ( rc.extension != null )
+            return rc.extension.opArithmetic( opCode, rc.l, rc.r, rc.l, rc );
         return printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
     }
 
     protected static boolean opNumberArithmetic(byte opCode,  RunContext rc ) {
 //        printMsg("opNumberArithmetic.", "rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
 
-        if ( !rc.r.isNumber() )
-            return printError("opNumberArithmetic", "rvalue is not a number. dts: " + rc.r.dts, rc);
+        if ( ! rc.r.isNumber() ) {
+            if ( ! TypeCast.cast(rc.r, Def.DTS_NUMBER, rc) )
+                return printError("opNumberArithmetic", "rvalue is not a number. dts: " + rc.r.dts, rc);
+        }
 
         rc.l.dts = Def.DTS_NUMBER;
         switch ( opCode ) {
@@ -159,19 +165,17 @@ public class Operators {
         return printError("opNumberArithmetic", "Unexpected opCode. opCode: " + opCode, rc);
     }
 
-
     public static boolean opEqual( RunContext rc ) {
         rc.obtainRv();
         rc.obtainLv();
 
-        if ( rc.l.dts != rc.r.dts )
-            return printError("opEqual", "not equal dts. ldts: " + rc.l.dts + " rdts: " + rc.r.dts, rc );
+        if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
+            if ( !TypeCast.cast(rc.l, rc.r.dts, rc) )
+                return false;
 
         rc.l.dts = Def.DTS_BOOL;
-        if ( rc.r.val == null ) {
-            rc.l.val = true;
-            return true;
-        }
+        if ( rc.l.val == null )
+            return rc.r.val == null;
         rc.l.val = rc.l.val.equals( rc.r.val );
         return true;
     }
@@ -180,17 +184,15 @@ public class Operators {
         rc.obtainRv();
         rc.obtainLv();
 
-        if ( rc.l.dts != rc.r.dts )
-            return printError("opNotEqual", "not equal dts. ldts: " + rc.l.dts + " rdts: " + rc.r.dts, rc );
+        if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
+            if ( !TypeCast.cast(rc.l, rc.r.dts, rc) )
+                return false;
 
         rc.l.dts = Def.DTS_BOOL;
+        if ( rc.l.val == null)
+            return rc.r.val != null;
 
-        if ( rc.l.val == null) {
-            rc.l.val = !(rc.r.val == null );
-            return true;
-        }
-
-        rc.l.val = rc.l.val.equals( rc.r.val );
+        rc.l.val = ! rc.l.val.equals( rc.r.val );
         return true;
     }
 

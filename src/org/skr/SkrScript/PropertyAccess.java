@@ -9,31 +9,30 @@ public class PropertyAccess {
     public static boolean getProperty( RunContext rc ) {
         rc.obtainLv();
         rc.obtainRv();
-        if ( !rc.r.isPropertyCode() )
+        if (!rc.r.isPropertyCode())
             return printError("getProperty", "rvalue is not a property", rc);
-        return getProperty( rc.l, (Integer)rc.r.val, rc.l, rc );
+        PropertyPool.Adapter adapter = PropertyPool.getPropertyAdapter(rc.l.dts, (Integer) rc.r.val);
+        return adapter != null && adapter.get(rc.l, rc.l, rc);
     }
 
     public static boolean getProperty( Value obj, int propCode,
                                        Value result, RunContext rc ) {
-        if ( rc.extension != null )
-            return rc.extension.getProperty( obj, propCode, result, rc );
-        return printError("getProperty", "lvalue has no properties", rc);
+        PropertyPool.Adapter adapter = PropertyPool.getPropertyAdapter(obj.dts, propCode);
+        return adapter != null && adapter.get(obj, result, rc);
     }
 
     // lval must contain RunContext.PropertyRef. rval must contains value (not a variable ).
     public static boolean setProperty( RunContext rc ) {
         if ( !rc.l.isPropertyRef() )
-            return printError("setProperty", "lvalue is not property reference", rc);
+            return printError("setProperty", "lvalue is not a property reference", rc);
         RunContext.PropertyRef pr = (RunContext.PropertyRef) rc.l.val;
-        return setProperty( pr, rc.r, rc );
+        PropertyPool.Adapter adapter = PropertyPool.getPropertyAdapter(pr.obj.dts, pr.prop);
+        return adapter != null && adapter.set(pr.obj, rc.r, rc);
     }
 
-
     public static boolean setProperty( RunContext.PropertyRef pr, Value v, RunContext rc ) {
-        if ( rc.extension != null )
-            return rc.extension.setProperty( pr, v, rc );
-        return printError("setProperty", "value has no properties. DTS: " + pr.obj.dts, rc);
+        PropertyPool.Adapter adapter = PropertyPool.getPropertyAdapter(pr.obj.dts, pr.prop);
+        return adapter != null && adapter.set(pr.obj, v, rc);
     }
 
     protected static boolean printError( String fname, String msg, RunContext rc ) {

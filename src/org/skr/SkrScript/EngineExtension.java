@@ -4,9 +4,21 @@ package org.skr.SkrScript;
  * Created by rat on 06.12.14.
  */
 public abstract class EngineExtension {
-    protected abstract boolean opArithmetic( byte opCode, RunContext rc );
-    protected abstract boolean getProperty( Value obj, int propCode, Value result, RunContext rc );
-    protected abstract boolean setProperty( RunContext.PropertyRef pr, Value v, RunContext rc );
+    public static boolean setBuildInFunction(int address, FunctionPool.Adapter adapter) {
+        if ( address > Def.EXTENDED_BUILD_IN_FUNCTION_ADDRESS ) {
+            System.err.println("EngineExtension.setBuildInFunction. " +
+                    "Address must be less or equal Def.EXTENDED_BUILD_IN_FUNCTION_ADDRESS");
+            return false;
+        }
+        return FunctionPool.setAdapter( address, adapter );
+    }
+
+    public static boolean setProperty( int property, byte dts, PropertyPool.Adapter adapter ) {
+        return PropertyPool.setPropertyAdapter( dts, property, adapter );
+    }
+
+    protected abstract boolean opArithmetic( byte opCode, Value l, Value r, Value res, RunContext rc );
     protected abstract String getDtsString( byte dts );
-    protected abstract boolean buildInFunc( int address, RegisterPool args, int numOfArgs, Value result, RunContext rc );
+    protected abstract boolean typeCast( Value value, byte dstDts, RunContext rc );
+    protected abstract void setup();
 }

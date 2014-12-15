@@ -92,59 +92,59 @@ public class Def {
 
     // data type specifiers
 
-    protected static final byte DTS_NULL           = -8; // null data
-    protected static final byte DTS_REG            = -9; // index of ScriptContext registry
-    protected static final byte DTS_VAR            = -10; // index of ScriptRunContext registry ( variable )
-    protected static final byte DTS_NUMBER         = -11; // float number
-    protected static final byte DTS_BOOL           = -12; // bool value
-    protected static final byte DTS_STRING         = -13; // index of a string in the Script.string array
-    protected static final byte DTS_TYPE           = -14; // data type specifier
-    protected static final byte DTS_PROP_CODE      = -15; // property code
-    protected static final byte DTS_PROP_REF       = -16; // property reference
+    public static final byte DTS_NULL           = -1; // null data
+    public static final byte DTS_REG            = -2; // index of ScriptContext registry
+    public static final byte DTS_VAR            = -3; // index of ScriptRunContext registry ( variable )
+    public static final byte DTS_NUMBER         = -4; // float number
+    public static final byte DTS_BOOL           = -5; // bool value
+    public static final byte DTS_STRING         = -6; // index of a string in the Script.string array
+    public static final byte DTS_TYPE           = -7; // data type specifier
+    public static final byte DTS_PROP_CODE      = -8; // property code
+    public static final byte DTS_PROP_REF       = -9; // property reference
 
 
-    public static final byte EXTENDED_DTS_CODE = -20; // top code for extended data types
+    public static final byte EXTENDED_DTS_CODE = -10; // top code for extended data types
 
 
     // build-in function addresses
 
-    public static final int FUNCTIONS_START_ADDR = -30;
+    public static final int FUNCTIONS_START_ADDR = -1;
 
-    protected static final int F_MSG                 = - 30; // send message to the std.out
-    protected static final int F_ERR                 = - 31; // send message to the std.err
-    protected static final int F_SET_SLOT_ENABLED    = - 32; // send message to the std.err
-    protected static final int F_TYPE_TO_STR         = - 33; // convert value of DTS_TYPE to Strings
+    protected static final int F_MSG                 = - 1; // send message to the std.out
+    protected static final int F_ERR                 = - 2; // send message to the std.err
+    protected static final int F_SET_SLOT_ENABLED    = - 3; // send message to the std.err
+    protected static final int F_TYPE_TO_STR         = - 4; // convert value of DTS_TYPE to Strings
 
 
-    protected static final int F_SIN                 = -34;
-    protected static final int F_COS                 = -35;
-    protected static final int F_TAN                 = -36;
-    protected static final int F_ACOS                = -37;
-    protected static final int F_ASIN                = -38;
-    protected static final int F_ATAN                = -39;
-    protected static final int F_CBRT                = -40;
-    protected static final int F_SQRT                = -41;
-    protected static final int F_EXP                 = -42;
-    protected static final int F_HYPOT               = -43;
-    protected static final int F_POW                 = -44;
-    protected static final int F_LOG                 = -45;
-    protected static final int F_LOG10               = -46;
-    protected static final int F_MAX                 = -47;
-    protected static final int F_MIN                 = -48;
-    protected static final int F_RANDOM              = -49;
-    protected static final int F_TO_DEGREES          = -50;
-    protected static final int F_TO_RADIANS          = -51;
-    protected static final int F_ABS                 = -52;
-    protected static final int F_FLOOR               = -53;
-    protected static final int F_CEIL                = -54;
-    protected static final int F_ROUND               = -55;
+    protected static final int F_SIN                 = -5;
+    protected static final int F_COS                 = -6;
+    protected static final int F_TAN                 = -7;
+    protected static final int F_ACOS                = -8;
+    protected static final int F_ASIN                = -9;
+    protected static final int F_ATAN                = -10;
+    protected static final int F_CBRT                = -11;
+    protected static final int F_SQRT                = -12;
+    protected static final int F_EXP                 = -13;
+    protected static final int F_HYPOT               = -14;
+    protected static final int F_POW                 = -15;
+    protected static final int F_LOG                 = -16;
+    protected static final int F_LOG10               = -17;
+    protected static final int F_MAX                 = -18;
+    protected static final int F_MIN                 = -19;
+    protected static final int F_RANDOM              = -20;
+    protected static final int F_TO_DEGREES          = -21;
+    protected static final int F_TO_RADIANS          = -22;
+    protected static final int F_ABS                 = -23;
+    protected static final int F_FLOOR               = -24;
+    protected static final int F_CEIL                = -25;
+    protected static final int F_ROUND               = -26;
 
-    public static final int EXTENDED_BUILD_IN_FUNCTION_ADDRESS = -64; // top address for extended build-in functions;
+    public static final int EXTENDED_BUILD_IN_FUNCTION_ADDRESS = -27; // top address for extended build-in functions;
 
     // aid functions
 
     protected static boolean isDts( byte code ) {
-        return ( code <= -10 );
+        return  code <= 0;
     }
 
     protected static  boolean isUnaryOperator(byte code) {

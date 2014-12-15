@@ -27,4 +27,8 @@ public class Slot {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    public Script getScript() {
+        return script;
+    }
 }
