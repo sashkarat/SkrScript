@@ -170,8 +170,7 @@ public class Operators {
         rc.obtainLv();
 
         if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
-            if ( !TypeCast.cast(rc.l, rc.r.dts, rc) )
-                return false;
+            return false;
 
         rc.l.dts = Def.DTS_BOOL;
         if ( rc.l.val == null )
@@ -185,8 +184,7 @@ public class Operators {
         rc.obtainLv();
 
         if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
-            if ( !TypeCast.cast(rc.l, rc.r.dts, rc) )
-                return false;
+            return false;
 
         rc.l.dts = Def.DTS_BOOL;
         if ( rc.l.val == null)

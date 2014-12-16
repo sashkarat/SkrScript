@@ -287,6 +287,15 @@ public class Builder {
         return false;
     }
 
+    public static String getFName(int address ) {
+        if ( address >= 0 )
+            return "";
+        for ( Integer id : bfuncMap.keySet() )
+            if ( address == bfuncMap.get(id).address )
+                return bfuncMap.get(id).name;
+        return "";
+    }
+
     static class VariableMap {
         int idx = -1;
         HashMap<String, Integer > map = new HashMap<String, Integer>();

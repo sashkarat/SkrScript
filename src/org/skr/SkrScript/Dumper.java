@@ -43,7 +43,13 @@ public class Dumper {
 
             switch ( opCode ) {
                 case Def.OP_F_CALL:
-                    out(" [" + rc.readInt() + "] ");
+                    out(" [" );
+                    int address = rc.readInt();
+                    String fname = Builder.getFName( address );
+                    if ( !fname.isEmpty() )
+                        out( fname + "(" + address + ")]");
+                    else
+                        out(address + "] ");
                     out(" AN<" + rc.nextByte() + ">");
                     break;
                 case Def.SETRV:
@@ -68,8 +74,8 @@ public class Dumper {
 
     static String getOpCodeStr(byte opCode) {
         switch ( opCode ) {
-            case Def.EOE:
-                return "EOE";
+            case Def.NOP:
+                return "NOP";
             case Def.OP_NOT:
                 return "OP !";
             case Def.OP_U_ADD:

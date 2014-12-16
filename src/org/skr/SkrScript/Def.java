@@ -7,7 +7,7 @@ public class Def {
 
     // operations and  priorities
 
-    protected static final byte EOE                = 0; // end of expression
+    protected static final byte NOP = 0; // end of expression
 
 
 

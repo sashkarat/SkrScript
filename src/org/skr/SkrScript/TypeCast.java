@@ -13,7 +13,7 @@ public class TypeCast {
         }
         if ( rc.extension != null && rc.extension.typeCast( value, dstDts, rc ) )
             return true;
-//        System.err.println("TypeCast. Can't cast from: " + value.dts + " to " + dstDts );
+        System.err.println("TypeCast. Can't cast from: " + value.dts + " to " + dstDts );
         return false;
     }
 }
