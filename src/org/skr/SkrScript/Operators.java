@@ -47,7 +47,7 @@ public class Operators {
             case Def.OP_GET_PROP_REF:
                 return opGetPropRef( rc );
         }
-        printError("execOp", "Unknown op. opCode: " + opCode, rc);
+        Engine.printError("execOp", "Unknown op. opCode: " + opCode, rc);
         return false;
     }
 
@@ -55,7 +55,7 @@ public class Operators {
         rc.obtainLv();
         rc.obtainRv();
         if ( ! rc.r.isPropertyCode() ) {
-            return printError("opGetPropRef", "rvalue is not a property", rc);
+            return Engine.printError("opGetPropRef", "rvalue is not a property", rc);
         }
         rc.pr.obj.set( rc.l );
         rc.pr.prop = (Integer) rc.r.val;
@@ -67,7 +67,7 @@ public class Operators {
     public static boolean opNot( RunContext rc ) {
         rc.obtainRv();
         if ( ! rc.r.isBool() )
-            return printError("opNot", "rvalue is not a boolean. dts: " + rc.r.dts, rc);
+            return Engine.printError("opNot", "rvalue is not a boolean. dts: " + rc.r.dts, rc);
         rc.l.val = ! (Boolean) rc.r.val;
         rc.l.dts = rc.r.dts;
         return true;
@@ -76,7 +76,7 @@ public class Operators {
     public static boolean opUnSub( RunContext rc ) {
         rc.obtainRv();
         if ( !rc.r.isNumber())
-            return printError("opUnSub", "rvalue is not a number type. dts: " + rc.r.dts, rc);
+            return Engine.printError("opUnSub", "rvalue is not a number type. dts: " + rc.r.dts, rc);
         rc.l.dts = rc.r.dts;
         rc.l.val = - (Float) rc.r.val;
         return true;
@@ -93,21 +93,19 @@ public class Operators {
     }
 
     public static boolean opArithmetic( byte opCode, RunContext rc ) {
-//        printMsg("opArithmetic.", "lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
+//        Engine.printMsg("opArithmetic.", "lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
         rc.obtainLv();
         rc.obtainRv();
 
-//        printMsg("opArithmetic.", "Obtained: lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
+//        Engine.printMsg("opArithmetic.", "Obtained: lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
 
         switch ( rc.l.dts ) {
             case Def.DTS_NUMBER:
                 return opNumberArithmetic(opCode, rc );
             case Def.DTS_STRING:
-//                printMsg("opArithmetic.", "rval: " + rv.toString() + " op: " + ScriptDumper.getOpCodeStr( opCode), rc);
-                if ( opCode != Def.OP_ADD ) {
-                    printError("opArithmetic", "Unsupported string op. opCode: " + opCode, rc);
-                    return false;
-                }
+//                Engine.printMsg("opArithmetic.", "rval: " + rv.toString() + " op: " + ScriptDumper.getOpCodeStr( opCode), rc);
+                if ( opCode != Def.OP_ADD )
+                    return Engine.printError("opArithmetic", "Unsupported string op. opCode: " + opCode, rc);
                 rc.l.dts = Def.DTS_STRING;
                 if ( !rc.r.isString() )
                     TypeCast.cast(rc.r, Def.DTS_STRING, rc);
@@ -116,11 +114,11 @@ public class Operators {
             case Def.DTS_TYPE:
             case Def.DTS_BOOL:
             case Def.DTS_NULL:
-                return printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
+                return Engine.printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
         }
         if ( rc.extension != null )
             return rc.extension.opArithmetic( opCode, rc.l, rc.r, rc.l, rc );
-        return printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
+        return Engine.printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
     }
 
     protected static boolean opNumberArithmetic(byte opCode,  RunContext rc ) {
@@ -128,7 +126,7 @@ public class Operators {
 
         if ( ! rc.r.isNumber() ) {
             if ( ! TypeCast.cast(rc.r, Def.DTS_NUMBER, rc) )
-                return printError("opNumberArithmetic", "rvalue is not a number. dts: " + rc.r.dts, rc);
+                return Engine.printError("opNumberArithmetic", "rvalue is not a number. dts: " + rc.r.dts, rc);
         }
 
         rc.l.dts = Def.DTS_NUMBER;
@@ -162,7 +160,7 @@ public class Operators {
                 rc.l.val = (Float) rc.l.val >= (Float) rc.r.val;
                 return true;
         }
-        return printError("opNumberArithmetic", "Unexpected opCode. opCode: " + opCode, rc);
+        return Engine.printError("opNumberArithmetic", "Unexpected opCode. opCode: " + opCode, rc);
     }
 
     public static boolean opEqual( RunContext rc ) {
@@ -199,10 +197,10 @@ public class Operators {
         rc.obtainRv();
 
         if ( !rc.l.isBool() )
-            return printError("opAndOr", "LValue is not a boolean. dts: " + rc.l.dts, rc );
+            return Engine.printError("opAndOr", "LValue is not a boolean. dts: " + rc.l.dts, rc);
 
         if ( !rc.r.isBool() )
-            return printError("opAndOr", "RValue is not a boolean. dts: " + rc.r, rc );
+            return Engine.printError("opAndOr", "RValue is not a boolean. dts: " + rc.r, rc);
 
         rc.l.dts = Def.DTS_BOOL;
         Boolean a = (Boolean) rc.l.val;
@@ -240,12 +238,4 @@ public class Operators {
         return false;
 */
 
-    protected static boolean printError( String fname, String msg, RunContext rc ) {
-        System.err.println("ERROR. ScriptOpProcessing"+ "<" + rc.opPos + "> " + fname + " " + msg);
-        return false;
-    }
-
-    protected static void printMsg( String fname, String msg, RunContext rc ) {
-        System.out.println("ScriptOpProcessing"+ "<" + rc.opPos + "> " + fname + " " + msg);
-    }
 }

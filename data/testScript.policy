@@ -119,12 +119,23 @@ function init() {
         msg( "v is a vector " );
     }
 
+    var ang = PI;
+        msg("sin pi: " + sin(ang) );
+
+
+
+
+
+
+
+
     if ( true ) {
         setSlotEnabled( false );
         return;
     }
 
     msg( "never calls" );
+
 }
 
 function run() {

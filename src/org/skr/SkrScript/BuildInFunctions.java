@@ -202,42 +202,42 @@ public class BuildInFunctions {
 
     private static boolean round(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("round", "arg is not a number", rc );
+            return Engine.printError("round", "arg is not a number", rc);
         rc.l.set(  Math.round((Float) args.getValue(0) ), Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean ceil(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("ceil", "arg is not a number", rc );
+            return Engine.printError("ceil", "arg is not a number", rc);
         rc.l.set(  (float) Math.ceil((Float) args.getValue(0) ) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean floor(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("floor", "arg is not a number", rc );
+            return Engine.printError("floor", "arg is not a number", rc);
         rc.l.set(  (float) Math.floor((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean abs(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("abs", "arg is not a number", rc );
+            return Engine.printError("abs", "arg is not a number", rc);
         rc.l.set( Math.abs((Float) args.getValue(0) ) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean toRad(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("toRad", "arg is not a number", rc );
+            return Engine.printError("toRad", "arg is not a number", rc);
         rc.l.set(  (float) Math.toRadians((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean toDeg(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("toDeg", "arg is not a number", rc );
+            return Engine.printError("toDeg", "arg is not a number", rc);
         rc.l.set(  (float) Math.toDegrees((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
@@ -249,41 +249,41 @@ public class BuildInFunctions {
 
     private static boolean min(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("min", "arg0 is not a number", rc );
+            return Engine.printError("min", "arg0 is not a number", rc);
         if ( args.getDts(1) != Def.DTS_NUMBER )
-            return printError("min", "arg1 is not a number", rc );
+            return Engine.printError("min", "arg1 is not a number", rc);
         rc.l.set( Math.min((Float) args.getValue(0), (Float) args.getValue(1) ) , Def.DTS_NUMBER );
         return true;
     }
 
     private static boolean max(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("max", "arg0 is not a number", rc );
+            return Engine.printError("max", "arg0 is not a number", rc);
         if ( args.getDts(1) != Def.DTS_NUMBER )
-            return printError("max", "arg1 is not a number", rc );
+            return Engine.printError("max", "arg1 is not a number", rc);
         rc.l.set( Math.max((Float) args.getValue(0), (Float) args.getValue(1)) , Def.DTS_NUMBER );
         return true;
     }
 
     private static boolean log10(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("log10", "arg is not a number", rc );
+            return Engine.printError("log10", "arg is not a number", rc);
         rc.l.set(  (float) Math.log10((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean log(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("log", "arg is not a number", rc );
+            return Engine.printError("log", "arg is not a number", rc);
         rc.l.set(  (float) Math.log((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean pow(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("pow", "arg0 is not a number", rc );
+            return Engine.printError("pow", "arg0 is not a number", rc);
         if ( args.getDts(1) != Def.DTS_NUMBER )
-            return printError("pow", "arg1 is not a number", rc );
+            return Engine.printError("pow", "arg1 is not a number", rc);
         rc.l.set( (float) Math.pow((Float) args.getValue(0), (Float) args.getValue(1)) , Def.DTS_NUMBER );
         return true;
 
@@ -291,9 +291,9 @@ public class BuildInFunctions {
 
     private static boolean hypot(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("hypot", "arg0 is not a number", rc );
+            return Engine.printError("hypot", "arg0 is not a number", rc);
         if ( args.getDts(1) != Def.DTS_NUMBER )
-            return printError("hypot", "arg1 is not a number", rc );
+            return Engine.printError("hypot", "arg1 is not a number", rc);
         rc.l.set( (float) Math.hypot((Float) args.getValue(0), (Float) args.getValue(1) ) , Def.DTS_NUMBER );
         return true;
 
@@ -301,49 +301,49 @@ public class BuildInFunctions {
 
     private static boolean exp(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("exp", "arg is not a number", rc );
+            return Engine.printError("exp", "arg is not a number", rc);
         rc.l.set(  (float) Math.exp((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean sqrt(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("sqrt", "arg is not a number", rc );
+            return Engine.printError("sqrt", "arg is not a number", rc);
         rc.l.set(  (float) Math.sqrt((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean cbrt(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("cbrt", "arg is not a number", rc );
+            return Engine.printError("cbrt", "arg is not a number", rc);
         rc.l.set(  (float) Math.cbrt((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean atan(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("atan", "arg is not a number", rc );
+            return Engine.printError("atan", "arg is not a number", rc);
         rc.l.set(  (float) Math.atan((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean asin(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("asin", "arg is not a number", rc );
+            return Engine.printError("asin", "arg is not a number", rc);
         rc.l.set(  (float) Math.asin((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean acos(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("acos", "arg is not a number", rc );
+            return Engine.printError("acos", "arg is not a number", rc);
         rc.l.set(  (float) Math.acos((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean tan(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("tan", "arg is not a number", rc );
+            return Engine.printError("tan", "arg is not a number", rc);
         rc.l.set(  (float) Math.tan((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
 
@@ -351,58 +351,21 @@ public class BuildInFunctions {
 
     private static boolean cos(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("cos", "arg is not a number", rc );
+            return Engine.printError("cos", "arg is not a number", rc);
         rc.l.set(  (float) Math.cos((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean sin(RunContext rc) {
         if ( args.getDts(0) != Def.DTS_NUMBER )
-            return printError("sin", "arg is not a number", rc );
+            return Engine.printError("sin", "arg is not a number", rc);
         rc.l.set(  (float) Math.sin((Float) args.getValue(0)) , Def.DTS_NUMBER  );
         return true;
     }
 
     private static boolean typeToStr(RunContext rc ) {
-
         byte dts = (args.getDts(0) == Def.DTS_TYPE )? (Byte) args.getValue(0) : args.getDts(0);
-        rc.l.dts = Def.DTS_STRING;
-
-        switch ( dts ) {
-            case Def.DTS_BOOL:
-                rc.l.val = "BOOL";
-                break;
-            case Def.DTS_NULL:
-                rc.l.val = "NULL";
-                break;
-            case Def.DTS_NUMBER:
-                rc.l.val = "NUMBER";
-                break;
-            case Def.DTS_REG:
-                rc.l.val = "REG";
-                break;
-            case Def.DTS_VAR:
-                rc.l.val = "VAR";
-                break;
-            case Def.DTS_STRING:
-                rc.l.val = "STR";
-                break;
-            case Def.DTS_TYPE:
-                rc.l.val = "TYPE";
-                break;
-            case Def.DTS_PROP_CODE:
-                rc.l.val = "PROP_CODE";
-                break;
-            default:
-                if ( rc.extension != null ) {
-                    String s = rc.extension.getDtsString( dts );
-                    if ( s != null ) {
-                        rc.l.val = s;
-                        return true;
-                    }
-                }
-                return printError("typeToStr", "unknown dts: " + dts, rc);
-        }
+        rc.l.setAsString( Engine.getDtsStr( dts, rc) );
         return true;
     }
 
@@ -424,15 +387,7 @@ public class BuildInFunctions {
     }
 
     protected static boolean printErrTypeMistmatch( String fname, byte rightType, byte thisType, RunContext rc ) {
-        return printError(fname, "Argument type mistmatch. Expected: " + rightType + " but taken: " + thisType, rc );
+        return Engine.printError(fname, "Argument type mistmatch. Expected: " + rightType + " but taken: " + thisType, rc);
     }
 
-    protected static boolean printError( String fname, String msg, RunContext rc ) {
-        System.err.println("ERROR. ScriptBuildInFunctions"+ "<" + rc.pos + "> " + fname + " " + msg);
-        return false;
-    }
-
-    protected static void printMsg( String fname, String msg, RunContext rc ) {
-        System.out.println("ScriptBuildInFunctions"+ "<" + rc.pos + "> " + fname + " " + msg);
-    }
 }

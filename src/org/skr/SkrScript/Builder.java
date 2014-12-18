@@ -1790,8 +1790,13 @@ public class Builder {
             return true;
         }
 
-        if ( ecc.bc.rmap.isVariable( token )  )
-            return putVariable( token, ecc, true );
+        if ( ecc.bc.rmap.isVariable( token )  ) {
+            if ( ! putVariable(token, ecc, true) )
+                return false;
+            if ( obtainVar )
+                ecc.bc.putOp( (leftValue) ? Def.OBTAINLV : Def.OBTAINRV );
+            return true;
+        }
 
         if ( isWord( token ) ) {
             printError("putVal. Undefined token: " + token, bc);

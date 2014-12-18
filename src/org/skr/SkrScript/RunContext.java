@@ -125,35 +125,35 @@ public class RunContext {
     protected void pushLv() {
         dataStack.push( l.val );
         dtsStack.push( l.dts );
-//        printMsg("pushLv", lval.toString(), this );
+//        Engine.printMsg("pushLv", lval.toString(), this );
     }
 
     protected void pushRv() {
         dataStack.push( r.val );
         dtsStack.push( r.dts );
-//        printMsg("pushRv", rval.toString(), this );
+//        Engine.printMsg("pushRv", rval.toString(), this );
     }
     protected void popLv() {
         l.val = dataStack.pop();
         l.dts = dtsStack.pop();
-//        printMsg("popLv", lval.toString(), this );
+//        Engine.printMsg("popLv", lval.toString(), this );
     }
 
     protected void popRv() {
         r.val = dataStack.pop();
         r.dts = dtsStack.pop();
-//        printMsg("popRv", rval.toString(), this );
+//        Engine.printMsg("popRv", rval.toString(), this );
     }
 
     protected void popArg( RegisterPool args, int index ) {
-
         args.set( dataStack.pop(), dtsStack.pop(), index);
+
     }
 
     protected void popVal( Value v) {
         v.val = dataStack.pop();
         v.dts = dtsStack.pop();
-//        printMsg("popRv", rval.toString(), this );
+//        Engine.printMsg("popRv", rval.toString(), this );
     }
 
     protected void fcall( int addr, byte argNumber ) {
@@ -168,11 +168,11 @@ public class RunContext {
         varNum = argNumber;
         pos = addr;
 
-//        printMsg("fcall", "addr: " + pos + " retCode: " + retCode, this );
+//        Engine.printMsg("fcall", "addr: " + pos + " retCode: " + retCode, this );
     }
 
     protected void ret( ) {
-//        printMsg("ret.", "lval: " + lval.toString(), this);
+//        Engine.printMsg("ret.", "lval: " + lval.toString(), this);
         pos = retCode;
         popEnv();
     }
@@ -207,7 +207,7 @@ public class RunContext {
     protected void readRVal() {
         r.dts = nextByte();
         r.val = readValue( r.dts );
-//        printMsg("readRVal", "rval: " + rval, this);
+//        Engine.printMsg("readRVal", "rval: " + rval, this);
         if ( r.val == null )
             r.dts = Def.DTS_NULL;
     }
@@ -215,13 +215,13 @@ public class RunContext {
     protected void readLVal() {
         l.dts = nextByte();
         l.val = readValue( l.dts );
-//        printMsg("readLVal", "lval: " + lval, this);
+//        Engine.printMsg("readLVal", "lval: " + lval, this);
         if ( l.val == null )
             l.dts = Def.DTS_NULL;
     }
 
     protected Object readValue( byte dts ) {
-//        printMsg("readValue", "dts: " + dts, this);
+//        Engine.printMsg("readValue", "dts: " + dts, this);
         switch ( dts ) {
             case Def.DTS_NULL:
                 return null;
@@ -240,22 +240,12 @@ public class RunContext {
             case Def.DTS_PROP_CODE:
                 return readInt();
             default:
-                printError("readValue", "Undefined dts: " + dts, this);
+                Engine.printError("readValue", "Undefined dts: " + dts, this);
                 return null;
         }
     }
 
-    protected static void printError( String msg, RunContext rc ) {
-        System.err.println("ERROR. ScriptRunContext"+ "<" + (rc.opPos) + "> " + " " + msg);
-    }
 
-    protected static void printError( String fname, String msg, RunContext rc ) {
-        System.err.println("ERROR. ScriptRunContext"+ "<" + (rc.opPos) + "> " + fname + " " + msg);
-    }
-
-    protected static void printMsg( String fname, String msg, RunContext rc ) {
-        System.out.println("ScriptRunContext" + "<" + (rc.opPos) + "> " + fname + " " + msg);
-    }
 
     protected static boolean run( int entryPoint, RunContext rc ) {
 
@@ -328,36 +318,28 @@ public class RunContext {
             }
 
             if ( Def.isOperator(opCode) ) {
-//                printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ), rc);
+//                Engine.printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ), rc);
                 if ( ! Operators.execOp(opCode, rc) )
                     return false;
-//                printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ) + " res: lval: " + rc.lval.toString(), rc);
+//                Engine.printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ) + " res: lval: " + rc.lval.toString(), rc);
                 continue;
             }
 
-            printError("run", "Undefined opCode: " + opCode, rc );
+            Engine.printError("run", "Undefined opCode: " + opCode, rc);
             break;
         }
 
-        printError("run", "Unexpected code finalization", rc);
-
-        return false;
+        return Engine.printError("run", "Unexpected code finalization", rc);
     }
 
     public static boolean checkArgNumber(RunContext rc,  int numOfArgs, int noaMin, int noaMax ) {
-        if (numOfArgs < noaMin || numOfArgs > noaMax ) {
-            printError( "Invalid arguments count", rc );
-            return false;
-        }
-        return true;
+        return !(numOfArgs < noaMin || numOfArgs > noaMax) || Engine.printError("Invalid arguments count", rc);
     }
 
     public static boolean checkArgTypes(RunContext rc,  RegisterPool args, byte ... dts ) {
         for ( int i = 0; i < dts.length; i++) {
-            if (args.getDts(i) != dts[i]) {
-                printError("Argument " + i + " type mismatch", rc);
-                return false;
-            }
+            if (args.getDts(i) != dts[i])
+                return Engine.printError("Argument " + i + " type mismatch", rc);
         }
         return true;
     }

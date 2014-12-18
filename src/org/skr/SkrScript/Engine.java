@@ -45,15 +45,63 @@ public class Engine {
         return true;
     }
 
-    static void printError( String msg, RunContext rc ) {
-        System.err.println( msg + " <pos: " + rc.opPos + "> ");
+    public static String getDtsStr(byte dts, RunContext rc) {
+        switch ( dts ) {
+            case Def.DTS_BOOL:
+                return "bool";
+            case Def.DTS_NULL:
+                return "null";
+            case Def.DTS_NUMBER:
+                return "number";
+            case Def.DTS_REG:
+                return "reg";
+            case Def.DTS_VAR:
+                return "var";
+            case Def.DTS_STRING:
+                return "string";
+            case Def.DTS_TYPE:
+                return "type";
+            case Def.DTS_PROP_CODE:
+                return "propertyCode";
+            default:
+                if ( rc.extension != null )
+                    return rc.extension.getDtsString( dts );
+                return "<" + dts + ">";
+        }
     }
 
-    static void printMsg( String msg, RunContext rc ) {
-        System.out.println( msg + " <pos: " + rc.opPos + "> ");
+    public static boolean printError( String msg, RunContext rc ) {
+        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + " " + msg);
+        return false;
     }
 
-    static void printMsg( String msg) {
-        System.out.println( msg );
+    public static boolean printError( String tag, String msg, RunContext rc ) {
+        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + tag + " " + msg);
+        return false;
     }
+
+    public static boolean peArgNumError( String tag, RunContext rc ) {
+        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + tag + " argument count mismatch");
+        return false;
+    }
+
+    public static boolean peArgTypeError( String tag, int idx, RunContext rc ) {
+        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + tag + " argument " + idx + " type mismatch");
+        return false;
+    }
+
+    public static boolean pePropertyIsReadOnly(int propCode, RunContext rc ) {
+        return Engine.printError("setProperty: " + propCode, " Property is read only ", rc);
+    }
+
+    public static boolean peTypeInvalidType(int propCode, RunContext rc ) {
+        return Engine.printError("setProperty: " + propCode, " Invalid value type", rc );
+    }
+
+    protected static void printMsg( String tag, String msg, RunContext rc ) {
+        System.out.println("Script Run Msg " + "<" + (rc.opPos) + ">: " + tag + " " + msg);
+    }
+
+
+
 }
