@@ -94,7 +94,7 @@ public class Engine {
         return Engine.printError("setProperty: " + propCode, " Property is read only ", rc);
     }
 
-    public static boolean peTypeInvalidType(int propCode, RunContext rc ) {
+    public static boolean peSetPropInvalidType(int propCode, RunContext rc) {
         return Engine.printError("setProperty: " + propCode, " Invalid value type", rc );
     }
 

@@ -52,6 +52,9 @@ public class Dumper {
                         out(address + "] ");
                     out(" AN<" + rc.nextByte() + ">");
                     break;
+                case Def.DECVARNUM:
+                    out(" [" + rc.readInt() + "] ");
+                    break;
                 case Def.SETRV:
                     dumpValue( rc );
                     break;
@@ -74,8 +77,6 @@ public class Dumper {
 
     static String getOpCodeStr(byte opCode) {
         switch ( opCode ) {
-            case Def.NOP:
-                return "NOP";
             case Def.OP_NOT:
                 return "OP !";
             case Def.OP_U_ADD:
@@ -138,6 +139,8 @@ public class Dumper {
                 return "RET";
             case Def.INCVARNUM:
                 return "INCVARNUM";
+            case Def.DECVARNUM:
+                return "DECVARNUM";
             case Def.OBTAINLV:
                 return "OBTAINLV";
             case Def.OBTAINRV:

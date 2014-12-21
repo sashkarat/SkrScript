@@ -35,12 +35,16 @@ define testNumber 1e-1
 
 function init() {
 
+
+    msg("*** Test call 1-arg and no-arg functions");
     3+one( nof() );
 
+    msg("*** Test complex expression. b must be: -85");
     var a = 4;
     var b = 10 + a - mul( 8, 6 ) + (3 - 7*8) +2;
     msg( "b = " + b );
 
+    msg("*** Test Script extension. working with vector.");
     var x = -8;
     var v = vec2( x, -10);
     msg ( "v = " + v + " is a " + typeStr( v ) );
@@ -59,7 +63,7 @@ function init() {
         msg( "v is not a number" );
     }
 
-
+    msg("*** Test: call number of functions with number of arguments");
 
     var d = 3+.2;
     msg( "d: " + d);
@@ -79,15 +83,22 @@ function init() {
     nnn();
     nnn(4);
 
+    msg("*** Test. simple for- loop");
+
     for ( var i = 0; i < 6; i = i + 1 ) {
         msg( "i=" + i );
     }
 
+    msg("*** Test. simple while- loop");
+
     v = vec2( 11, 18);
+
 
     while ( ( v._x = v._x - 1 ) >= 0 ) {
         msg( "v=" + v );
     }
+
+    msg("*** Test. number of tests");
 
     reg z = vec2(0, 1);
     var q = vec2( 0.1e-10, 1);
@@ -119,18 +130,38 @@ function init() {
         msg( "v is a vector " );
     }
 
+
+    msg("*** Test call build-in function: sin and PI define ");
     var ang = PI;
-        msg("sin pi: " + sin(ang) );
+    msg("sin pi: " + sin(ang) );
 
 
+    msg("*** Test var num control" + scriptGetDumpEnvStr() );
 
+    for ( var i = 0; i < 2; i = i+1 ) {
+        var w = "i: " + i;
+        msg( " i-level A. dmp: " + scriptGetDumpEnvStr() );
+        for ( var j = 0; j < 2; j = j+1 ) {
+            var w = "j: " + j;
+            msg("   j-level. W: " + w + " dmp: " + scriptGetDumpEnvStr() );
+        }
+        msg(" i-level B.  W: " + w + " dmp: " + scriptGetDumpEnvStr() );
+    }
 
+    msg("*** Test var num control. finished. dmp: " + scriptGetDumpEnvStr() );
+    msg("*** values of some variables " );
+    msg("ang: " + ang );
+    msg("v: " + v );
+    msg("z: " + z );
+    msg("q: " + q );
+    msg("prop: " + prop );
 
 
 
 
     if ( true ) {
         setSlotEnabled( false );
+        msg("*** TEST FINISHED");
         return;
     }
 

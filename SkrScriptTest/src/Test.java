@@ -28,7 +28,7 @@ public class Test {
         static final int PROP_X = 0;
         static final int PROP_Y = 1;
 
-        static final int F_CRT_VEC = Def.EXTENDED_BUILD_IN_FUNCTION_ADDRESS;
+        static final int F_CRT_VEC = Def.EXTENDED_BUILD_IN_FUNCTION_ADDRESS - 1;
 
         public void init() {
             Builder.addExtendedDTS(DTS_VECTOR2, "VECTOR2");
@@ -136,7 +136,7 @@ public class Test {
 
         Script script = new Script();
 
-        Builder.setVerboseLevel( 3 );
+        Builder.setVerboseLevel( 1 );
 
         if ( ! Builder.build(txt, script) )
             return;

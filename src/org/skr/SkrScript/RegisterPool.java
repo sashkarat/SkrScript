@@ -14,7 +14,12 @@ public class RegisterPool {
         allocate( num );
     }
 
+    public RegisterPool() {
+    }
+
     public void allocate( int num ) {
+        if ( num <= 0 )
+            return;
         objects = new Object[ num ];
         dataTypes = new byte[ num ];
         for ( int i  = 0; i < num; i++ )
@@ -22,6 +27,10 @@ public class RegisterPool {
     }
 
     private void realloc( int index ) {
+        if ( objects == null ) {
+            allocate( index + 1 );
+            return;
+        }
         Object [] oldObjects = objects;
         byte [] oldDataTypes = dataTypes;
         int num = objects.length/2;
@@ -45,7 +54,7 @@ public class RegisterPool {
 
     public boolean set( Value v, int index ) {
         index += offset;
-        if ( index >= objects.length )
+        if ( objects == null || index >= objects.length )
             realloc( index );
         objects[ index ] = v.val;
         dataTypes[ index ] = v.dts;
@@ -54,7 +63,7 @@ public class RegisterPool {
 
     public boolean set( Object val, byte dts, int index ) {
         index += offset;
-        if ( index >= objects.length )
+        if ( objects == null || index >= objects.length )
             realloc( index );
         objects[ index ] = val;
         dataTypes[ index ] = dts;
@@ -63,7 +72,7 @@ public class RegisterPool {
 
     public void get( Value v,  int index ) {
         index += offset;
-        if ( index >= objects.length )
+        if ( objects == null || index >= objects.length )
             realloc( index );
         v.val = objects[ index ];
         v.dts = dataTypes[ index ];
@@ -71,14 +80,14 @@ public class RegisterPool {
 
     public Object getValue( int index ) {
         index += offset;
-        if ( index >= objects.length )
+        if ( objects == null || index >= objects.length )
             realloc( index );
         return objects[ index ];
     }
 
     public byte getDts( int index ) {
         index += offset;
-        if ( index >= objects.length )
+        if ( objects == null || index >= objects.length )
             realloc( index );
         return dataTypes[ index ];
     }

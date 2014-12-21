@@ -293,6 +293,10 @@ public class RunContext {
                 case Def.INCVARNUM:
                     rc.varNum++;
                     continue;
+                case Def.DECVARNUM:
+                    int count = rc.readInt();
+                    rc.varNum -= count;
+                    continue;
                 case Def.OBTAINLV:
                     rc.obtainLv();
                     continue;

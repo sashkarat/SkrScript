@@ -1,5 +1,6 @@
 package org.skr.SkrScript;
 
+
 /**
  * Created by rat on 29.11.14.
  */
@@ -190,6 +191,17 @@ public class BuildInFunctions {
                 return round(rc);
             }
         } );
+
+        FunctionPool.setAdapter(Def.F_GET_DUMP_ENV_STR, new FunctionPool.Adapter() {
+            @Override
+            public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
+                if ( numOfArgs != 0 )
+                    return Engine.peArgNumError("scriptDumpEnv", rc );
+                res.setAsString( "Script dumpEnv. vars.offset " + rc.vars.offset + "; varNum: " + rc.varNum +
+                        "; retCode: " + rc.retCode );
+                return true;
+            }
+        });
     }
 
     public static boolean call( int addr, RunContext rc, byte numOfArg ) {

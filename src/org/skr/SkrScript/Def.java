@@ -7,9 +7,6 @@ public class Def {
 
     // operations and  priorities
 
-    protected static final byte NOP = 0; // end of expression
-
-
 
     protected static final int PRIO_MIN             = 1; //
 
@@ -84,23 +81,24 @@ public class Def {
     protected static final byte JUMPF              = 37; // jump if left value is boolean and false
     protected static final byte RET                = 38; // jump  to retCode position. pop environment.
     protected static final byte INCVARNUM          = 39; // increment environment.varNum
-    protected static final byte OBTAINLV           = 40; // converts lval DTS_REG (DTS_VAR) to not Reg(Var) type or does nothing
-    protected static final byte OBTAINRV           = 41; // converts rval DTS_REG (DTS_VAR) to not Reg(Var) type or does nothing
-    protected static final byte LVTORV             = 42; // copies lvalue to rvalue
-    protected static final byte RVTOLV             = 43; // copies rvalue to lvalue
+    protected static final byte DECVARNUM          = 40; // decrement environment.varNum
+    protected static final byte OBTAINLV           = 41; // converts lval DTS_REG (DTS_VAR) to not Reg(Var) type or does nothing
+    protected static final byte OBTAINRV           = 42; // converts rval DTS_REG (DTS_VAR) to not Reg(Var) type or does nothing
+    protected static final byte LVTORV             = 43; // copies lvalue to rvalue
+    protected static final byte RVTOLV             = 44; // copies rvalue to lvalue
 
 
     // data type specifiers
 
-    public static final byte DTS_NULL           = -1; // null data
-    public static final byte DTS_REG            = -2; // index of ScriptContext registry
-    public static final byte DTS_VAR            = -3; // index of ScriptRunContext registry ( variable )
-    public static final byte DTS_NUMBER         = -4; // float number
-    public static final byte DTS_BOOL           = -5; // bool value
-    public static final byte DTS_STRING         = -6; // index of a string in the Script.string array
-    public static final byte DTS_TYPE           = -7; // data type specifier
-    public static final byte DTS_PROP_CODE      = -8; // property code
-    public static final byte DTS_PROP_REF       = -9; // property reference
+    public static final byte DTS_NULL           = 0; // null data
+    public static final byte DTS_REG            = -1; // index of ScriptContext registry
+    public static final byte DTS_VAR            = -2; // index of ScriptRunContext registry ( variable )
+    public static final byte DTS_NUMBER         = -3; // float number
+    public static final byte DTS_BOOL           = -4; // bool value
+    public static final byte DTS_STRING         = -5; // index of a string in the Script.string array
+    public static final byte DTS_TYPE           = -6; // data type specifier
+    public static final byte DTS_PROP_CODE      = -7; // property code
+    public static final byte DTS_PROP_REF       = -8; // property reference
 
 
     public static final byte EXTENDED_DTS_CODE = -10; // top code for extended data types
@@ -139,7 +137,10 @@ public class Def {
     protected static final int F_CEIL                = -25;
     protected static final int F_ROUND               = -26;
 
-    public static final int EXTENDED_BUILD_IN_FUNCTION_ADDRESS = -27; // top address for extended build-in functions;
+
+    protected static final int F_GET_DUMP_ENV_STR = -27;
+
+    public static final int EXTENDED_BUILD_IN_FUNCTION_ADDRESS = -100; // top address for extended build-in functions;
 
     // aid functions
 

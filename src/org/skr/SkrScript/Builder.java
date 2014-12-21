@@ -167,6 +167,8 @@ public class Builder {
         putFunction(bfuncMap, "ceil", (byte) 1, true, Def.F_CEIL);
         putFunction(bfuncMap, "round", (byte) 1, true, Def.F_ROUND);
 
+        putFunction(bfuncMap, "scriptGetDumpEnvStr", (byte) 0, true, Def.F_GET_DUMP_ENV_STR);
+
         defines.put("PI", "3.1415927");
         defines.put("E", "2.7182818");
     }
@@ -360,6 +362,13 @@ public class Builder {
             if ( Builder.verboseLevel > 2 )
                 printMsg("putOp: " + Dumper.getOpCodeStr(opCode), this);
             optimizedAdd( opCode );
+        }
+
+        public void putDecVar( VariableMap vmap ) {
+            if ( vmap.map.size() == 0 )
+                return;
+            putOp( Def.DECVARNUM );
+            putInt( vmap.map.size(), bytes );
         }
 
         private void optimizedAdd(byte opCode ) {
@@ -861,6 +870,8 @@ public class Builder {
 
 //            printMsg("buildSection. token: " + token, sbc.bc);
             if ( token.equals("}") ) {
+                if ( sbc.bc.getLastOpCode() != Def.RET )
+                    sbc.bc.putDecVar( vmap );
                 if ( verboseLevel > 0 )
                     printMsg("buildSection. ..... finish", sbc.bc);
                 return true;
@@ -1002,6 +1013,11 @@ public class Builder {
     }
 
     static boolean buildFor(VariableMap vmap, SectionBuildContext sbc ) {
+
+        VariableMap vm = new VariableMap();
+        vm.parentMap = vmap;
+        vmap = vm;
+
         while ( sbc.bc.tknzr.hasMoreTokens() ) {
             String token = nextToken( sbc.bc );
             if ( token == null )
@@ -1068,7 +1084,7 @@ public class Builder {
             while ( !subSbc.breakPosStack.isEmpty() ) {
                 setInt( sbc.bc.bytes.size, sbc.bc.bytes, subSbc.breakPosStack.pop() );
             }
-
+            sbc.bc.putDecVar( vmap );
             return true;
         }
         return false;
