@@ -68,10 +68,8 @@ public class Dumper {
                     out(" [" + rc.readInt() + "]");
                     break;
             }
-
             out(";");
             ln();
-
         }
     }
 
@@ -89,6 +87,8 @@ public class Dumper {
                 return "FCALL";
             case Def.OP_DIV:
                 return "OP /";
+            case Def.OP_MOD:
+                return "OP %";
             case Def.OP_MUL:
                 return "OP *";
             case Def.OP_ADD:
@@ -178,7 +178,11 @@ public class Dumper {
                 break;
             case Def.DTS_NULL:
                 break;
-            case Def.DTS_NUMBER:
+            case Def.DTS_INT:
+                int i = rc.readInt();
+                out("" + i);
+                break;
+            case Def.DTS_FLOAT:
                 float f = rc.readFloat();
                 out("" + f);
                 break;

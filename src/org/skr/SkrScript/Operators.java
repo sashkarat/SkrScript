@@ -23,15 +23,13 @@ public class Operators {
                 return opTypeOf( rc );
             case Def.OP_DIV:
             case Def.OP_MUL:
+            case Def.OP_MOD:
             case Def.OP_ADD:
             case Def.OP_SUB:
             case Def.OP_LESS:
             case Def.OP_GRT:
             case Def.OP_LOEQ:
             case Def.OP_GOEQ:
-//                boolean res = opArithmetic( opCode, rc );
-//                printMsg("execOp", "op: " + ScriptDumper.getOpCodeStr( opCode) + " res: " + rc.lval.toString(), rc );
-//                return  res;
                 return opArithmetic( opCode, rc );
             case Def.OP_NOT_EQ:
                 return opNotEqual( rc );
@@ -58,108 +56,109 @@ public class Operators {
             return Engine.printError("opGetPropRef", "rvalue is not a property", rc);
         }
         rc.pr.obj.set( rc.l );
-        rc.pr.prop = (Integer) rc.r.val;
-        rc.l.val = rc.pr;
-        rc.l.dts = Def.DTS_PROP_REF;
+        rc.pr.prop = rc.r.asPropertyCode();
+        rc.l.set( rc.pr, Def.DTS_PROP_REF);
         return true;
     }
 
     public static boolean opNot( RunContext rc ) {
         rc.obtainRv();
-        if ( ! rc.r.isBool() )
-            return Engine.printError("opNot", "rvalue is not a boolean. dts: " + rc.r.dts, rc);
-        rc.l.val = ! (Boolean) rc.r.val;
-        rc.l.dts = rc.r.dts;
+        rc.l.setAsBool( ! rc.r.asBool() );
         return true;
     }
 
     public static boolean opUnSub( RunContext rc ) {
         rc.obtainRv();
-        if ( !rc.r.isNumber())
-            return Engine.printError("opUnSub", "rvalue is not a number type. dts: " + rc.r.dts, rc);
-        rc.l.dts = rc.r.dts;
-        rc.l.val = - (Float) rc.r.val;
+        rc.l.setAsFloat( - rc.r.asFloat(rc) );
         return true;
     }
 
     public static boolean opTypeOf( RunContext rc ) {
-//        printMsg("opTypeOf: ", "rv: " + rc.r, rc);
         rc.obtainRv();
-//        printMsg("opTypeOf: ", "obtained rv: " + rc.r, rc);
-        rc.l.dts = Def.DTS_TYPE;
-        rc.l.val = rc.r.dts;
-//        printMsg("opTypeOf: ", "lv: " + rc.l, rc);
+        rc.l.set( rc.r.dts(), Def.DTS_TYPE );
         return true;
     }
 
     public static boolean opArithmetic( byte opCode, RunContext rc ) {
-//        Engine.printMsg("opArithmetic.", "lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
         rc.obtainLv();
         rc.obtainRv();
 
-//        Engine.printMsg("opArithmetic.", "Obtained: lval: " + rc.l + " rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
-
-        switch ( rc.l.dts ) {
-            case Def.DTS_NUMBER:
-                return opNumberArithmetic(opCode, rc );
-            case Def.DTS_STRING:
-//                Engine.printMsg("opArithmetic.", "rval: " + rv.toString() + " op: " + ScriptDumper.getOpCodeStr( opCode), rc);
-                if ( opCode != Def.OP_ADD )
-                    return Engine.printError("opArithmetic", "Unsupported string op. opCode: " + opCode, rc);
-                rc.l.dts = Def.DTS_STRING;
-                if ( !rc.r.isString() )
-                    TypeCast.cast(rc.r, Def.DTS_STRING, rc);
-                rc.l.val = (String)rc.l.val + rc.r.val;
-                return true;
-            case Def.DTS_TYPE:
-            case Def.DTS_BOOL:
-            case Def.DTS_NULL:
-                return Engine.printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
+        if ( rc.l.isNumber() )
+            return opNumberArithmetic( opCode, rc );
+        if ( rc.l.isString() && opCode == Def.OP_ADD ) {
+            rc.l.setAsString( rc.l.asString() + rc.r.asString() );
+            return true;
         }
+
         if ( rc.extension != null )
             return rc.extension.opArithmetic( opCode, rc.l, rc.r, rc.l, rc );
-        return Engine.printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts, rc);
+        return Engine.printError("opArithmetic", "opCode: " + opCode + ". illegal lvalue type. dts: " + rc.l.dts(), rc);
     }
 
     protected static boolean opNumberArithmetic(byte opCode,  RunContext rc ) {
-//        printMsg("opNumberArithmetic.", "rval: " + rc.r + " op: " + Dumper.getOpCodeStr( opCode), rc);
 
-        if ( ! rc.r.isNumber() ) {
-            if ( ! TypeCast.cast(rc.r, Def.DTS_NUMBER, rc) )
-                return Engine.printError("opNumberArithmetic", "rvalue is not a number. dts: " + rc.r.dts, rc);
+
+        if ( rc.l.isFloat() || rc.r.isFloat()) {
+            switch (opCode) {
+                case Def.OP_ADD:
+                    rc.l.setAsFloat( rc.l.asFloat(rc) + rc.r.asFloat(rc) );
+                    return true;
+                case Def.OP_SUB:
+                    rc.l.setAsFloat( rc.l.asFloat(rc) - rc.r.asFloat(rc)  );
+                    return true;
+                case Def.OP_MUL:
+                    rc.l.setAsFloat( rc.l.asFloat(rc) * rc.r.asFloat(rc)  );
+                    return true;
+                case Def.OP_DIV:
+                    rc.l.setAsFloat( rc.l.asFloat(rc) / rc.r.asFloat(rc) );
+                case Def.OP_MOD:
+                    rc.l.setAsFloat( rc.l.asFloat(rc) % rc.r.asFloat(rc)  );
+                    return true;
+                case Def.OP_LESS:
+                    rc.l.setAsBool( rc.l.asFloat(rc) < rc.r.asFloat(rc) );
+                    return true;
+                case Def.OP_LOEQ:
+                    rc.l.setAsBool( rc.l.asFloat(rc) <= rc.r.asFloat(rc)  );
+                    return true;
+                case Def.OP_GRT:
+                    rc.l.setAsBool( rc.l.asFloat(rc) > rc.r.asFloat(rc) );
+                    return true;
+                case Def.OP_GOEQ:
+                    rc.l.setAsBool( rc.l.asFloat(rc) >= rc.r.asFloat(rc)  );
+                    return true;
+            }
+        } else if ( rc.l.isInt() ) {
+            switch (opCode) {
+                case Def.OP_ADD:
+                    rc.l.setAsInt( rc.l.asInt( rc ) + rc.r.asInt( rc ) );
+                    return true;
+                case Def.OP_SUB:
+                    rc.l.setAsInt( rc.l.asInt( rc ) - rc.r.asInt( rc ) );
+                    return true;
+                case Def.OP_MUL:
+                    rc.l.setAsInt( rc.l.asInt( rc ) * rc.r.asInt( rc ) );
+                    return true;
+                case Def.OP_DIV:
+                    rc.l.setAsInt( rc.l.asInt( rc ) / rc.r.asInt( rc ) );
+                    return true;
+                case Def.OP_MOD:
+                    rc.l.setAsInt( rc.l.asInt( rc ) % rc.r.asInt( rc ) );
+                    return true;
+                case Def.OP_LESS:
+                    rc.l.setAsBool( rc.l.asInt( rc ) < rc.r.asInt( rc )  );
+                    return true;
+                case Def.OP_LOEQ:
+                    rc.l.setAsBool( rc.l.asInt( rc ) <= rc.r.asInt( rc )  );
+                    return true;
+                case Def.OP_GRT:
+                    rc.l.setAsBool( rc.l.asInt( rc ) > rc.r.asInt( rc )  );
+                    return true;
+                case Def.OP_GOEQ:
+                    rc.l.setAsBool( rc.l.asInt( rc ) >= rc.r.asInt( rc )  );
+                    return true;
+            }
         }
 
-        rc.l.dts = Def.DTS_NUMBER;
-        switch ( opCode ) {
-            case Def.OP_ADD:
-                rc.l.val = (Float) rc.l.val + (Float) rc.r.val;
-                return true;
-            case Def.OP_SUB:
-                rc.l.val = (Float) rc.l.val - (Float) rc.r.val;
-                return true;
-            case Def.OP_MUL:
-                rc.l.val = (Float) rc.l.val * (Float) rc.r.val;
-                return true;
-            case Def.OP_DIV:
-                rc.l.val = (Float) rc.l.val / (Float) rc.r.val;
-                return true;
-        }
-
-        rc.l.dts = Def.DTS_BOOL;
-        switch ( opCode ) {
-            case Def.OP_LESS:
-                rc.l.val = (Float) rc.l.val < (Float) rc.r.val;
-                return true;
-            case Def.OP_LOEQ:
-                rc.l.val = (Float) rc.l.val <= (Float) rc.r.val;
-                return true;
-            case Def.OP_GRT:
-                rc.l.val = (Float) rc.l.val > (Float) rc.r.val;
-                return true;
-            case Def.OP_GOEQ:
-                rc.l.val = (Float) rc.l.val >= (Float) rc.r.val;
-                return true;
-        }
         return Engine.printError("opNumberArithmetic", "Unexpected opCode. opCode: " + opCode, rc);
     }
 
@@ -167,13 +166,14 @@ public class Operators {
         rc.obtainRv();
         rc.obtainLv();
 
-        if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
-            return false;
+        if ( rc.l.isBool() || rc.r.isBool() ) {
+            rc.l.setAsBool( rc.l.asBool() == rc.r.asBool() );
+            return true;
+        }
+        if ( rc.l.isNull() )
+            return rc.r.isNull();
 
-        rc.l.dts = Def.DTS_BOOL;
-        if ( rc.l.val == null )
-            return rc.r.val == null;
-        rc.l.val = rc.l.val.equals( rc.r.val );
+        rc.l.setAsBool(rc.l.val().equals(rc.r.val()));
         return true;
     }
 
@@ -181,14 +181,14 @@ public class Operators {
         rc.obtainRv();
         rc.obtainLv();
 
-        if ( !TypeCast.cast(rc.r, rc.l.dts, rc) )
-            return false;
+        if ( rc.l.isBool() || rc.r.isBool() ) {
+            rc.l.setAsBool( rc.l.asBool() != rc.r.asBool() );
+            return true;
+        }
+        if ( rc.l.isNull() )
+            return !rc.r.isNull();
 
-        rc.l.dts = Def.DTS_BOOL;
-        if ( rc.l.val == null)
-            return rc.r.val != null;
-
-        rc.l.val = ! rc.l.val.equals( rc.r.val );
+        rc.l.setAsBool( ! rc.l.val().equals( rc.r.val() ) );
         return true;
     }
 
@@ -196,20 +196,13 @@ public class Operators {
         rc.obtainLv();
         rc.obtainRv();
 
-        if ( !rc.l.isBool() )
-            return Engine.printError("opAndOr", "LValue is not a boolean. dts: " + rc.l.dts, rc);
-
-        if ( !rc.r.isBool() )
-            return Engine.printError("opAndOr", "RValue is not a boolean. dts: " + rc.r, rc);
-
-        rc.l.dts = Def.DTS_BOOL;
-        Boolean a = (Boolean) rc.l.val;
-        Boolean b = (Boolean) rc.r.val;
+        Boolean a = rc.l.asBool();
+        Boolean b = rc.r.asBool();
 
         if ( opCode == Def.OP_AND )
-            rc.l.val = ( a && b );
+            rc.l.setAsBool(a && b);
         else if ( opCode == Def.OP_OR )
-            rc.l.val = ( a || b );
+            rc.l.setAsBool(a || b);
         return true;
     }
 
@@ -217,25 +210,4 @@ public class Operators {
 //        printMsg("opAssign", "l: " + rc.l + " r: " + rc.r, rc);
         return ( rc.obtainRv() != null ) && rc.rvToLvVar();
     }
-
-/*
-        rc.obtainRv( rv );
-        rc.obtainLv( lv );
-
-        switch ( rv.dts ) {
-            case ScriptCodes.DTS_NULL:
-                return true;
-            case ScriptCodes.DTS_REG:
-            case ScriptCodes.DTS_VAR:
-            case ScriptCodes.DTS_BOOL:
-            case ScriptCodes.DTS_NUMBER:
-            case ScriptCodes.DTS_STRING:
-            case ScriptCodes.DTS_TYPE:
-            default:
-
-        }
-        printError("", "illegal rvalue type. dts: " + rv.dts, rc);
-        return false;
-*/
-
 }

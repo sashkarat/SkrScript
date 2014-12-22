@@ -57,10 +57,10 @@ function init() {
 
     v = 4;
 
-    if ( typeof v == number ) {
-        msg( "v is a real number now" );
+    if ( typeof v == float ) {
+        msg( "v is a float now" );
     } else {
-        msg( "v is not a number" );
+        msg( "v is not a float. It's a: " + typeStr( typeof v ) );
     }
 
     msg("*** Test: call number of functions with number of arguments");
@@ -155,6 +155,7 @@ function init() {
     msg("z: " + z );
     msg("q: " + q );
     msg("prop: " + prop );
+
 
 
 

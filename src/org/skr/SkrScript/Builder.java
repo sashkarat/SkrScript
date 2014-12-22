@@ -94,12 +94,13 @@ public class Builder {
     static final HashMap<String, String > defines = new HashMap<String, String>();
     static int verboseLevel = 0;
 
-    static final String delimitersStr = " \t\r\n+-*/<>=,;()[]{}!|&#\":.";
+    static final String delimitersStr = " \t\r\n+-*/%<>=,;()[]{}!|&#\":.";
     static {
         operators.put("+", Def.OP_ADD);
         operators.put("-", Def.OP_SUB);
         operators.put("*", Def.OP_MUL);
         operators.put("/", Def.OP_DIV);
+        operators.put("%", Def.OP_MOD);
         operators.put("<", Def.OP_LESS);
         operators.put(">", Def.OP_GRT);
         operators.put("!", Def.OP_NOT);
@@ -114,11 +115,12 @@ public class Builder {
         operators.put("<=", Def.OP_LOEQ);
         operators.put("typeof", Def.OP_TYPEOF);
 
-        dataTypeSpec.put("null",       Def.DTS_NULL );
-        dataTypeSpec.put("bool",       Def.DTS_BOOL );
-        dataTypeSpec.put("string",     Def.DTS_STRING );
-        dataTypeSpec.put("number",     Def.DTS_NUMBER );
-        dataTypeSpec.put("type",       Def.DTS_TYPE );
+        dataTypeSpec.put("null",        Def.DTS_NULL );
+        dataTypeSpec.put("bool",        Def.DTS_BOOL );
+        dataTypeSpec.put("string",      Def.DTS_STRING );
+        dataTypeSpec.put("int",         Def.DTS_INT );
+        dataTypeSpec.put("float",       Def.DTS_FLOAT );
+        dataTypeSpec.put("type",        Def.DTS_TYPE );
         dataTypeSpec.put("property",    Def.DTS_PROP_CODE );
 
         keywords.add("function");
@@ -1566,14 +1568,14 @@ public class Builder {
                     printMsg("  cE. parse \')\'", bc);
                 if ( ! collapseStacks( ecc, (byte) 126 ) )
                     return false;
-                prevOpCode = Def.DTS_NUMBER;
+                prevOpCode = Def.DTS_INT; // this is set to fix lval
                 continue;
             }
 
             ecc.pushOperand( token );
             if ( verboseLevel > 1 )
                 printMsg("  cE. push token: " + token + " oS:" + ecc.oStack.size, bc);
-            prevOpCode = Def.DTS_NUMBER;
+            prevOpCode = Def.DTS_INT; // this is set to fix value token
         }
         return collapseStacks( ecc, (byte) 127);
     }
@@ -1820,9 +1822,15 @@ public class Builder {
         }
 
         try {
-            float n = Float.valueOf( token );
-            ecc.bc.putOp(Def.DTS_NUMBER);
-            putFloat( n , ecc.bc.bytes );
+            if ( token.contains(".") || token.contains("e") || token.contains("E") ) {
+                float n = Float.valueOf( token );
+                ecc.bc.putOp(Def.DTS_FLOAT);
+                putFloat(n, ecc.bc.bytes);
+            } else {
+                int n = Integer.valueOf(token);
+                ecc.bc.putOp(Def.DTS_INT);
+                putInt(n, ecc.bc.bytes);
+            }
             return true;
         } catch ( NumberFormatException e ) {
             e.printStackTrace();

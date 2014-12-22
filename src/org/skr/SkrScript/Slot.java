@@ -5,7 +5,7 @@ package org.skr.SkrScript;
  */
 public class Slot {
 
-    RegisterPool registers;
+    ValuePool registers;
     Script script;
     boolean enabled = true;
 
@@ -17,7 +17,7 @@ public class Slot {
 
     public void setScript( Script script ) {
         this.script = script;
-        registers = new RegisterPool( this.script.numOfReg);
+        registers = new ValuePool( this.script.numOfReg);
     }
 
     public boolean isEnabled() {

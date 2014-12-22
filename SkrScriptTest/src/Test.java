@@ -52,8 +52,8 @@ public class Test {
         }
 
         @Override
-        protected boolean typeCast(Value value, byte dstDts, RunContext rc) {
-            return false;
+        protected Object cast(Value value, byte dstDts, RunContext rc) {
+            return null;
         }
 
         @Override
@@ -61,9 +61,11 @@ public class Test {
 
             setBuildInFunction(F_CRT_VEC, new FunctionPool.Adapter() {
                 @Override
-                public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc) {
-                    res.val = new Vector2( (Float) args.getValue(0), (Float) args.getValue(1));
-                    res.dts = DTS_VECTOR2;
+                public boolean act(ValuePool args, int numOfArgs, Value res, RunContext rc) {
+                    res.set(
+                            new Vector2( args.get(0).asFloat( rc ), args.get(1).asFloat(rc)),
+                            DTS_VECTOR2
+                    );
                     return true;
                 }
             });
@@ -71,14 +73,14 @@ public class Test {
             setProperty(PROP_X, DTS_VECTOR2, new PropertyPool.Adapter() {
                 @Override
                 public boolean get(Value obj, Value res, RunContext rc) {
-                    Float x = ((Vector2) obj.val).x;
-                    res.setAsNumber( x );
+                    Float x = ((Vector2) obj.val()).x;
+                    res.setAsFloat(x);
                     return true;
                 }
 
                 @Override
                 public boolean set(Value obj, Value value, RunContext rc) {
-                    ((Vector2) obj.val).x = (Float) value.val;
+                    ((Vector2) obj.val()).x = value.asFloat( rc );
                     return true;
                 }
             });
@@ -86,14 +88,14 @@ public class Test {
             setProperty(PROP_Y, DTS_VECTOR2, new PropertyPool.Adapter() {
                 @Override
                 public boolean get(Value obj, Value res, RunContext rc) {
-                    Float y = ((Vector2) obj.val).y;
-                    res.setAsNumber( y );
+                    Float y = ((Vector2) obj.val()).y;
+                    res.setAsFloat(y);
                     return true;
                 }
 
                 @Override
                 public boolean set(Value obj, Value value, RunContext rc) {
-                    ((Vector2) obj.val).y = (Float) value.val;
+                    ((Vector2) obj.val()).y = (Float) value.val();
                     return true;
                 }
             });

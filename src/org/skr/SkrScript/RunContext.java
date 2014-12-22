@@ -37,8 +37,8 @@ public class RunContext {
     int varNum = 0;
     int retCode = -1;
 
-    RegisterPool vars = new RegisterPool( 128 );
-    RegisterPool regs;
+    ValuePool vars = new ValuePool( 128 );
+    ValuePool regs;
 
     public final Value l = new Value();
     public final Value r = new Value();
@@ -123,37 +123,29 @@ public class RunContext {
     }
 
     protected void pushLv() {
-        dataStack.push( l.val );
-        dtsStack.push( l.dts );
-//        Engine.printMsg("pushLv", lval.toString(), this );
+        dataStack.push( l.val() );
+        dtsStack.push( l.dts() );
+//        Engine.printMsg("pushLv", l.toString(), this );
     }
 
     protected void pushRv() {
-        dataStack.push( r.val );
-        dtsStack.push( r.dts );
-//        Engine.printMsg("pushRv", rval.toString(), this );
+        dataStack.push( r.val() );
+        dtsStack.push( r.dts() );
+//        Engine.printMsg("pushRv", r.toString(), this );
     }
     protected void popLv() {
-        l.val = dataStack.pop();
-        l.dts = dtsStack.pop();
-//        Engine.printMsg("popLv", lval.toString(), this );
+        l.set( dataStack.pop(), dtsStack.pop());
+//        Engine.printMsg("popLv", l.toString(), this );
     }
 
     protected void popRv() {
-        r.val = dataStack.pop();
-        r.dts = dtsStack.pop();
-//        Engine.printMsg("popRv", rval.toString(), this );
+        r.set( dataStack.pop(), dtsStack.pop());
+//        Engine.printMsg("popRv", r.toString(), this );
     }
 
-    protected void popArg( RegisterPool args, int index ) {
+    protected void popArg( ValuePool args, int index ) {
         args.set( dataStack.pop(), dtsStack.pop(), index);
 
-    }
-
-    protected void popVal( Value v) {
-        v.val = dataStack.pop();
-        v.dts = dtsStack.pop();
-//        Engine.printMsg("popRv", rval.toString(), this );
     }
 
     protected void fcall( int addr, byte argNumber ) {
@@ -178,9 +170,9 @@ public class RunContext {
     }
 
     protected void jumpF( int addr ) {
-        if ( l.dts != Def.DTS_BOOL )
+        if ( !l.isBool() )
             return;
-        if ( ! (Boolean) l.val )
+        if ( ! l.asBool() )
             pos = addr;
     }
 
@@ -204,24 +196,13 @@ public class RunContext {
         return l.setVar( r, this );
     }
 
-    protected void readRVal() {
-        r.dts = nextByte();
-        r.val = readValue( r.dts );
-//        Engine.printMsg("readRVal", "rval: " + rval, this);
-        if ( r.val == null )
-            r.dts = Def.DTS_NULL;
+    protected void readValue( Value v ) {
+        byte dts = nextByte();
+        v.set( readValueVal(dts), dts );
     }
 
-    protected void readLVal() {
-        l.dts = nextByte();
-        l.val = readValue( l.dts );
-//        Engine.printMsg("readLVal", "lval: " + lval, this);
-        if ( l.val == null )
-            l.dts = Def.DTS_NULL;
-    }
-
-    protected Object readValue( byte dts ) {
-//        Engine.printMsg("readValue", "dts: " + dts, this);
+    protected Object readValueVal(byte dts) {
+//        Engine.printMsg("readValueVal", "dts: " + dts, this);
         switch ( dts ) {
             case Def.DTS_NULL:
                 return null;
@@ -229,7 +210,9 @@ public class RunContext {
                 return readInt();
             case Def.DTS_VAR:
                 return readInt();
-            case Def.DTS_NUMBER:
+            case Def.DTS_INT:
+                return readInt();
+            case Def.DTS_FLOAT:
                 return readFloat();
             case Def.DTS_BOOL:
                 return ( nextByte() != 0);
@@ -240,7 +223,7 @@ public class RunContext {
             case Def.DTS_PROP_CODE:
                 return readInt();
             default:
-                Engine.printError("readValue", "Undefined dts: " + dts, this);
+                Engine.printError("readValueVal", "Undefined dts: " + dts, this);
                 return null;
         }
     }
@@ -260,10 +243,10 @@ public class RunContext {
 //            printMsg("run", "opCode: " + Builder.getOpName( opCode ), rc);
             switch ( opCode ) {
                 case Def.SETRV:
-                    rc.readRVal();
+                    rc.readValue(rc.r);
                     continue;
                 case Def.SETLV:
-                    rc.readLVal();
+                    rc.readValue( rc.l );
                     continue;
                 case Def.POPRV:
                     rc.popRv();
@@ -325,7 +308,7 @@ public class RunContext {
 //                Engine.printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ), rc);
                 if ( ! Operators.execOp(opCode, rc) )
                     return false;
-//                Engine.printMsg("run", "op: " + ScriptDumper.getOpCodeStr( opCode ) + " res: lval: " + rc.lval.toString(), rc);
+//                Engine.printMsg("run", "op: " + Dumper.getOpCodeStr(opCode) + " res: lval: " + rc.l, rc);
                 continue;
             }
 
@@ -334,17 +317,5 @@ public class RunContext {
         }
 
         return Engine.printError("run", "Unexpected code finalization", rc);
-    }
-
-    public static boolean checkArgNumber(RunContext rc,  int numOfArgs, int noaMin, int noaMax ) {
-        return !(numOfArgs < noaMin || numOfArgs > noaMax) || Engine.printError("Invalid arguments count", rc);
-    }
-
-    public static boolean checkArgTypes(RunContext rc,  RegisterPool args, byte ... dts ) {
-        for ( int i = 0; i < dts.length; i++) {
-            if (args.getDts(i) != dts[i])
-                return Engine.printError("Argument " + i + " type mismatch", rc);
-        }
-        return true;
     }
 }

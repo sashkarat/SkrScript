@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class FunctionPool {
     public interface Adapter {
-        public boolean act(RegisterPool args, int numOfArgs, Value res, RunContext rc );
+        public boolean act(ValuePool args, int numOfArgs, Value res, RunContext rc );
     }
 
     protected static ArrayList<Adapter> adapters = new ArrayList<Adapter>();

@@ -1,15 +1,25 @@
 package org.skr.SkrScript;
 
+import java.util.Objects;
+
 /**
  * Created by rat on 06.12.14.
  */
 public class Value {
-    public Object val = null;
-    public byte dts = Def.DTS_NULL;
+    private Object val = null;
+    private byte dts = Def.DTS_NULL;
 
     public void set ( Value v ) {
         val = v.val;
         dts = v.dts;
+    }
+
+    public Object val() {
+        return val;
+    }
+
+    public byte dts() {
+        return dts;
     }
 
     public boolean setVar( Value v, RunContext rc ){
@@ -31,7 +41,15 @@ public class Value {
     }
 
     public boolean isNumber() {
-        return dts == Def.DTS_NUMBER;
+        return dts == Def.DTS_FLOAT || dts == Def.DTS_INT;
+    }
+
+    public boolean isFloat() {
+        return dts == Def.DTS_FLOAT;
+    }
+
+    public boolean isInt() {
+        return dts == Def.DTS_INT;
     }
 
     public boolean isString() {
@@ -58,17 +76,17 @@ public class Value {
         return dts == Def.DTS_PROP_REF;
     }
 
-    public boolean isDts( byte dts ) {
+    public boolean dtsEquals(byte dts) {
         return this.dts == dts;
     }
 
     public Value obtain( RunContext rc ) {
         if ( dts == Def.DTS_VAR ) {
             Integer idx = (Integer) val;
-            rc.vars.get(this, idx);
+            set(rc.vars.get(idx));
         } else if ( dts == Def.DTS_REG ) {
             Integer idx = (Integer) val;
-            rc.regs.get( this, idx);
+            set(rc.regs.get(idx));
         } else if ( dts == Def.DTS_PROP_REF ) {
             RunContext.PropertyRef pr = (RunContext.PropertyRef) val;
             if ( !PropertyAccess.getProperty( pr.obj, pr.prop, this, rc ) )
@@ -82,9 +100,14 @@ public class Value {
         dts = Def.DTS_NULL;
     }
 
-    public void setAsNumber(Float v ) {
-        val = v;
-        dts = Def.DTS_NUMBER;
+    public void setAsInt(Integer i ) {
+        val = i;
+        dts = Def.DTS_INT;
+    }
+
+    public void setAsFloat(Float f ) {
+        val = f;
+        dts = Def.DTS_FLOAT;
     }
 
     public void setAsString(String s ) {
@@ -102,8 +125,65 @@ public class Value {
         this.dts = dts;
     }
 
+    public Boolean asBool() {
+        if ( dts == Def.DTS_BOOL )
+            return (Boolean) val;
+        if ( dts == Def.DTS_INT )
+            return (Integer) val != 0;
+        if ( dts == Def.DTS_FLOAT )
+            return (Float) val != 0.0f;
+        return val != null;
+    }
+
+    public Float asFloat( RunContext rc) {
+        if ( dts == Def.DTS_FLOAT )
+            return (Float) val;
+        if ( dts == Def.DTS_INT )
+            return  ( (Integer) val ).floatValue();
+        if ( val == null || rc.extension == null)
+            return null;
+        return (Float) rc.extension.cast( this, Def.DTS_FLOAT, rc );
+    }
+
+    public Integer asInt( RunContext rc ) {
+        if ( dts == Def.DTS_INT )
+            return (Integer) val;
+        if ( dts == Def.DTS_FLOAT )
+            return  ( (Float) val ).intValue();
+        if ( val == null || rc.extension == null)
+            return null;
+        return (Integer) rc.extension.cast( this, Def.DTS_INT, rc );
+    }
+
+    public String asString() {
+        if ( val == null )
+            return "null";
+        return val.toString();
+    }
+
+    public Byte asType() {
+        if ( dts == Def.DTS_TYPE )
+            return (Byte)val;
+        return null;
+    }
+
+    public Integer asPropertyCode() {
+        if ( dts == Def.DTS_PROP_CODE)
+            return (Integer)val;
+        return null;
+    }
+
     @Override
     public String toString() {
-        return "" + val + "(" + dts + ")";
+        StringBuilder sb = new StringBuilder();
+        if ( dts == Def.DTS_STRING )
+            sb.append("\"");
+        sb.append( val );
+        if ( dts == Def.DTS_STRING )
+            sb.append("\"");
+        sb.append("(");
+        sb.append(Engine.getDtsStr( dts, null ));
+        sb.append(")");
+        return sb.toString();
     }
 }

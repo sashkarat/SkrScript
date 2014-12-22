@@ -51,8 +51,10 @@ public class Engine {
                 return "bool";
             case Def.DTS_NULL:
                 return "null";
-            case Def.DTS_NUMBER:
-                return "number";
+            case Def.DTS_INT:
+                return "int";
+            case Def.DTS_FLOAT:
+                return "float";
             case Def.DTS_REG:
                 return "reg";
             case Def.DTS_VAR:
@@ -64,7 +66,7 @@ public class Engine {
             case Def.DTS_PROP_CODE:
                 return "propertyCode";
             default:
-                if ( rc.extension != null )
+                if ( rc!= null && rc.extension != null )
                     return rc.extension.getDtsString( dts );
                 return "<" + dts + ">";
         }
@@ -90,12 +92,17 @@ public class Engine {
         return false;
     }
 
+    public static boolean peCastFailed( String tag, byte srcDts, byte dstDts, RunContext rc ) {
+        return printError(tag, " Unable to cast: " + getDtsStr(srcDts, rc)
+                + " to " + getDtsStr( dstDts, rc ), rc);
+    }
+
     public static boolean pePropertyIsReadOnly(int propCode, RunContext rc ) {
-        return Engine.printError("setProperty: " + propCode, " Property is read only ", rc);
+        return printError("setProperty: " + propCode, " Property is read only ", rc);
     }
 
     public static boolean peSetPropInvalidType(int propCode, RunContext rc) {
-        return Engine.printError("setProperty: " + propCode, " Invalid value type", rc );
+        return printError("setProperty: " + propCode, " Invalid value type", rc );
     }
 
     protected static void printMsg( String tag, String msg, RunContext rc ) {

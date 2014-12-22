@@ -31,43 +31,45 @@ public class Def {
 
     public static final byte OP_DIV             = 10; //  / operator
     public static final byte OP_MUL             = 11; //  * operator
-
-    protected static final int PRIO_C             = 12; //
-
-    public static final byte OP_ADD             = 12; //  + operator
-    public static final byte OP_SUB             = 13; //  - operator
-
-    protected static final int PRIO_D             = 14; //
-
-    public static final byte OP_LESS            = 14; //  < operator
-    public static final byte OP_GRT             = 15; //  > operator
-    public static final byte OP_LOEQ            = 16; // <= operator
-    public static final byte OP_GOEQ            = 17; // >= operator
+    public static final byte OP_MOD             = 12; //  * operator
 
 
-    protected static final int PRIO_E             = 18; //
+    protected static final int PRIO_C             = 13; //
 
-    protected static final byte OP_NOT_EQ          = 18; // != operator
-    protected static final byte OP_EQ              = 19; // == operator
+    public static final byte OP_ADD             = 13; //  + operator
+    public static final byte OP_SUB             = 14; //  - operator
+
+    protected static final int PRIO_D             = 15; //
+
+    public static final byte OP_LESS            = 15; //  < operator
+    public static final byte OP_GRT             = 16; //  > operator
+    public static final byte OP_LOEQ            = 17; // <= operator
+    public static final byte OP_GOEQ            = 18; // >= operator
 
 
-    protected static final int PRIO_F             = 20; //
+    protected static final int PRIO_E             = 19; //
 
-    protected static final byte OP_AND             = 20; // & operator
+    protected static final byte OP_NOT_EQ          = 19; // != operator
+    protected static final byte OP_EQ              = 20; // == operator
 
-    protected static final int PRIO_G             = 21; //
 
-    protected static final byte OP_OR              = 21; // | operator
+    protected static final int PRIO_F             = 21; //
 
-    protected static final int PRIO_H             = 22; //
+    protected static final byte OP_AND             = 21; // & operator
 
-    protected static final byte OP_ASSIGN          = 22; // = operator
+    protected static final int PRIO_G             = 22; //
 
-    protected static final int PRIO_I             = 23; //
+    protected static final byte OP_OR              = 22; // | operator
 
-    protected static final byte OP_COMMA           = 23; // , operator(virtual). Builder converts it to "push right value"
+    protected static final int PRIO_H             = 23; //
 
-    protected static final int PRIO_J             = 24;
+    protected static final byte OP_ASSIGN          = 23; // = operator
+
+    protected static final int PRIO_I             = 24; //
+
+    protected static final byte OP_COMMA           = 24; // , operator(virtual). Builder converts it to "push right value"
+
+    protected static final int PRIO_J             = 25;
 
     // engine commands
 
@@ -93,12 +95,13 @@ public class Def {
     public static final byte DTS_NULL           = 0; // null data
     public static final byte DTS_REG            = -1; // index of ScriptContext registry
     public static final byte DTS_VAR            = -2; // index of ScriptRunContext registry ( variable )
-    public static final byte DTS_NUMBER         = -3; // float number
-    public static final byte DTS_BOOL           = -4; // bool value
-    public static final byte DTS_STRING         = -5; // index of a string in the Script.string array
-    public static final byte DTS_TYPE           = -6; // data type specifier
-    public static final byte DTS_PROP_CODE      = -7; // property code
-    public static final byte DTS_PROP_REF       = -8; // property reference
+    public static final byte DTS_INT            = -3; // Integer value
+    public static final byte DTS_FLOAT          = -4; // Float value
+    public static final byte DTS_BOOL           = -5; // bool value
+    public static final byte DTS_STRING         = -6; // index of a string in the Script.string array
+    public static final byte DTS_TYPE           = -7; // data type specifier
+    public static final byte DTS_PROP_CODE      = -8; // property code
+    public static final byte DTS_PROP_REF       = -9; // property reference
 
 
     public static final byte EXTENDED_DTS_CODE = -10; // top code for extended data types
