@@ -140,25 +140,6 @@ public class RunContext {
         retCode = retCodeStack.pop();
     }
 
-    protected void pushLv() {
-        valueStack.push( l );
-//        Engine.printMsg("pushLv", l.toString(), this );
-    }
-
-    protected void pushRv() {
-        valueStack.push( r );
-//        Engine.printMsg("pushRv", r.toString(), this );
-    }
-    protected void popLv() {
-        valueStack.pop( l );
-//        Engine.printMsg("popLv", l.toString(), this );
-    }
-
-    protected void popRv() {
-        valueStack.pop( r );
-//        Engine.printMsg("popRv", r.toString(), this );
-    }
-
     protected void popArg( ValuePool args, int index ) {
         valueStack.pop( args.get( index ) );
     }
@@ -189,26 +170,6 @@ public class RunContext {
             return;
         if ( ! l.asBool( this ) )
             pos = addr;
-    }
-
-    protected void lvToRv() {
-        r.set( l );
-    }
-
-    protected void rvToLv() {
-        l.set( r );
-    }
-
-    protected Value obtainRv() {
-        return r.obtain( this );
-    }
-
-    protected Value obtainLv() {
-        return l.obtain( this );
-    }
-
-    protected boolean rvToLvVar() {
-        return l.setVar( r, this );
     }
 
     protected void readValue( Value v ) {
@@ -257,7 +218,6 @@ public class RunContext {
         while ( rc.hasMoreBytes() ) {
             rc.opPos = rc.pos;
             byte opCode = rc.nextByte();
-//            printMsg("run", "opCode: " + Builder.getOpName( opCode ), rc);
             switch ( opCode ) {
                 case Def.SETRV:
                     rc.readValue(rc.r);
@@ -266,16 +226,16 @@ public class RunContext {
                     rc.readValue( rc.l );
                     continue;
                 case Def.POPRV:
-                    rc.popRv();
+                    rc.valueStack.pop( rc.r );
                     continue;
                 case Def.PUSHRV:
-                    rc.pushRv();
+                    rc.valueStack.push( rc.r );
                     continue;
                 case Def.POPLV:
-                    rc.popLv();
+                    rc.valueStack.pop( rc.l );
                     continue;
                 case Def.PUSHLV:
-                    rc.pushLv();
+                    rc.valueStack.push( rc.l );
                     continue;
                 case Def.JUMP:
                     rc.pos = rc.readInt();
@@ -298,16 +258,16 @@ public class RunContext {
                     rc.varNum -= count;
                     continue;
                 case Def.OBTAINLV:
-                    rc.obtainLv();
+                    rc.l.obtain( rc );
                     continue;
                 case Def.OBTAINRV:
-                    rc.obtainRv();
+                    rc.r.obtain( rc );
                     continue;
                 case Def.LVTORV:
-                    rc.lvToRv();
+                    rc.r.set( rc.l );
                     continue;
                 case Def.RVTOLV:
-                    rc.rvToLv();
+                    rc.l.set( rc.r );
                     continue;
                 case Def.OP_F_CALL:
                     int faddr = rc.readInt();

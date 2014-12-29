@@ -48,8 +48,8 @@ public class Operators {
     }
 
     private static boolean opGetPropRef(RunContext rc) {
-        rc.obtainLv();
-        rc.obtainRv();
+        rc.l.obtain(rc);
+        rc.r.obtain(rc);
         if ( ! rc.r.isPropertyCode() ) {
             return Engine.printError("opGetPropRef", "rvalue is not a property", rc);
         }
@@ -60,19 +60,19 @@ public class Operators {
     }
 
     public static boolean opNot( RunContext rc ) {
-        rc.obtainRv();
+        rc.r.obtain(rc);
         rc.l.setAsBool( ! rc.r.asBool( rc ) );
         return true;
     }
 
     public static boolean opTypeOf( RunContext rc ) {
-        rc.obtainRv();
+        rc.r.obtain(rc);
         rc.l.set( rc.r.dts(), Def.DTS_TYPE );
         return true;
     }
 
     protected static boolean unaryOpArithmetic( byte opCode, RunContext rc ) {
-        rc.obtainRv();
+        rc.r.obtain( rc );
         if (opCode == Def.OP_U_MINUS) {
             if (rc.r.isFloat()) {
                 rc.l.setAsFloat(-rc.r.asFloat(rc));
@@ -97,8 +97,8 @@ public class Operators {
     public static boolean opArithmetic( byte opCode, RunContext rc ) {
 //        Engine.printMsg("opArithmetic", "l: " + rc.l + " r: " + rc.r + " opCode: " + Dumper.getOpCodeStr(opCode), rc);
 
-        rc.obtainLv();
-        rc.obtainRv();
+        rc.l.obtain( rc );
+        rc.r.obtain( rc );
 
         if ( rc.l.isNumber() )
             return opNumberArithmetic(opCode, rc);
@@ -179,8 +179,8 @@ public class Operators {
     }
 
     public static boolean opEqual( RunContext rc ) {
-        rc.obtainRv();
-        rc.obtainLv();
+        rc.l.obtain(rc);
+        rc.r.obtain(rc);
 
         if ( rc.l.isBool() || rc.r.isBool() ) {
             rc.l.setAsBool( rc.l.asBool( rc ) == rc.r.asBool( rc ) );
@@ -194,8 +194,8 @@ public class Operators {
     }
 
     public static boolean opNotEqual( RunContext rc ) {
-        rc.obtainRv();
-        rc.obtainLv();
+        rc.l.obtain(rc);
+        rc.r.obtain(rc);
 
         if ( rc.l.isBool() || rc.r.isBool() ) {
             rc.l.setAsBool( rc.l.asBool(rc) != rc.r.asBool(rc) );
@@ -209,8 +209,8 @@ public class Operators {
     }
 
     public static boolean opAndOr(byte opCode, RunContext rc ) {
-        rc.obtainLv();
-        rc.obtainRv();
+        rc.l.obtain( rc );
+        rc.r.obtain( rc );
 
         Boolean a = rc.l.asBool(rc);
         Boolean b = rc.r.asBool(rc);
@@ -224,6 +224,6 @@ public class Operators {
 
     protected static boolean opAssign( RunContext rc ) {
 //        printMsg("opAssign", "l: " + rc.l + " r: " + rc.r, rc);
-        return ( rc.obtainRv() != null ) && rc.rvToLvVar();
+        return ( rc.r.obtain( rc ) != null ) && rc.l.setVar( rc.r, rc );
     }
 }

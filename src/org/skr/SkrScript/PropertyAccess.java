@@ -7,8 +7,8 @@ public class PropertyAccess {
 
     // lval must contains object. rval must contains prop code
     public static boolean getProperty( RunContext rc ) {
-        rc.obtainLv();
-        rc.obtainRv();
+        rc.l.obtain( rc );
+        rc.r.obtain( rc );
         if (!rc.r.isPropertyCode())
             return Engine.printError("getProperty", "rvalue is not a property", rc);
         PropertyPool.Adapter adapter = PropertyPool.getPropertyAdapter(rc.l.dts(), (Integer) rc.r.val());

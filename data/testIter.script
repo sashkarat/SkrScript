@@ -2,7 +2,7 @@ function init() {
 
     var acum = 0;
     var acum2 = 0;
-    var z = 100;
+    var z = 1000;
 
     while ( z > 0 ) {
         acum = 0;
