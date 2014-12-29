@@ -95,7 +95,7 @@ public class Operators {
     }
 
     public static boolean opArithmetic( byte opCode, RunContext rc ) {
-
+//        Engine.printMsg("opArithmetic", "l: " + rc.l + " r: " + rc.r + " opCode: " + Dumper.getOpCodeStr(opCode), rc);
 
         rc.obtainLv();
         rc.obtainRv();
@@ -113,6 +113,7 @@ public class Operators {
     }
 
     protected static boolean opNumberArithmetic(byte opCode,  RunContext rc ) {
+//        Engine.printMsg("opNumberArithmetic", "l: " + rc.l + " r: " + rc.r + " opCode: " + Dumper.getOpCodeStr(opCode), rc);
         if ( rc.l.isFloat() || rc.r.isFloat()) {
             switch (opCode) {
                 case Def.OP_ADD:

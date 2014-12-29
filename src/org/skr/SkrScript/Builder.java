@@ -327,6 +327,14 @@ public class Builder {
         HashMap<String, Integer > map = new HashMap<String, Integer>();
         VariableMap parentMap = null;
 
+        protected void updateIdx() {
+            if ( parentMap != null ) {
+                parentMap.updateIdx();
+                if ( idx < parentMap.idx )
+                    idx = parentMap.idx;
+            }
+        }
+
         int getIndex(String varName) {
             if ( map.containsKey( varName ) )
                 return map.get( varName );
@@ -348,10 +356,9 @@ public class Builder {
                printError("addVar. Variable: " + name + " is already defined.", bc);
                 return false;
             }
-            if ( parentMap != null ) {
-                if ( idx < parentMap.idx )
-                    idx = parentMap.idx;
-            }
+
+            updateIdx();
+
             map.put( name, ++idx);
             if ( verboseLevel > 1)
                 printMsg("addVar. " + (( map == bc.rmap.map)?"<reg> " : "<var> " ) + name  +   " idx: " + idx, bc);
@@ -1077,6 +1084,7 @@ public class Builder {
             sbc.bc.putOp((byte) 0); sbc.bc.putOp((byte) 0);
             sbc.bc.putOp((byte) 0); sbc.bc.putOp((byte) 0);
             int iterSecAddrPos = sbc.bc.bytes.size;
+
             //build iter section of a "for"
             token = buildExpression(null, vmap, sbc.bc );
             if ( token == null )
