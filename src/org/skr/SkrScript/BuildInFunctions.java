@@ -16,14 +16,14 @@ public class BuildInFunctions {
         FunctionPool.setAdapter( Def.F_MSG, new FunctionPool.Adapter() {
             @Override
             public boolean act(ValuePool args, int numOfArgs, Value res, RunContext rc) {
-                return msg();
+                return msg( rc );
             }
         } );
 
         FunctionPool.setAdapter( Def.F_ERR, new FunctionPool.Adapter() {
             @Override
             public boolean act(ValuePool args, int numOfArgs, Value res, RunContext rc) {
-                return err();
+                return err( rc );
             }
         } );
 
@@ -347,17 +347,19 @@ public class BuildInFunctions {
     }
 
     private static boolean setSlotEnabled(RunContext rc) {
-        rc.slot.setEnabled(args.get(0).asBool());
+        rc.slot.setEnabled(args.get(0).asBool(rc));
         return true;
     }
 
-    public static boolean msg() {
-        System.out.println("Script msg: " + args.get(0).asString());
+    public static boolean msg( RunContext rc ) {
+        if ( rc.isOutEnabled() )
+            System.out.println("Script msg: " + args.get(0).asString());
         return true;
     }
 
-    public static boolean err() {
-        System.out.println("Script error: " + args.get(0).asString());
+    public static boolean err( RunContext rc ) {
+        if ( rc.isErrEnabled() )
+            System.err.println("Script error: " + args.get(0).asString());
         return true;
     }
 }

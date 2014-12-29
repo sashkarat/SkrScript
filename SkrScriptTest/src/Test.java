@@ -45,6 +45,11 @@ public class Test {
         }
 
         @Override
+        protected boolean unaryOpArithmetic(byte opCode, Value r, Value res, RunContext rc) {
+            return false;
+        }
+
+        @Override
         protected String getDtsString(byte dts) {
             if ( dts == DTS_VECTOR2 )
                 return "VECTOR2";
@@ -105,19 +110,25 @@ public class Test {
     }
 
 
-    public static void main( String [] arg ) {
-        System.out.println(new File(".").getAbsoluteFile());
-        File file = new File("data/testScript.policy");
+    public static void main( String [] arg ) throws IOException {
+
+        String path = new File(".").getCanonicalPath();
+        path = path+"/data/testIter.script";
+
+        File file = new File(path);
+
+        InputStream stream = Test.class.getResourceAsStream("/data/testIter.script");
+
+        if ( stream == null )
+            stream = new FileInputStream(file);
+
         BufferedReader br;
         try {
             br = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(file), "UTF-8"
+                            stream, "UTF-8"
                     )
             );
-        } catch ( FileNotFoundException e ) {
-            e.printStackTrace();
-            return;
         } catch ( UnsupportedEncodingException e ) {
             e.printStackTrace();
             return;
@@ -138,7 +149,7 @@ public class Test {
 
         Script script = new Script();
 
-        Builder.setVerboseLevel( 1 );
+//        Builder.setVerboseLevel( 1 );
 
         if ( ! Builder.build(txt, script) )
             return;
@@ -151,10 +162,45 @@ public class Test {
         Engine engine = new Engine();
         engine.setExtension( ee );
 
+        engine.setOutEnabled(true);
 
         System.out.println("Init point: " + slot.getScript().initPoint);
 
+        float cost;
+        long start = System.nanoTime();
+
         engine.init(slot);
 
+        start = System.nanoTime() - start;
+
+        System.out.println(" PT: " + start + " ns ");
+
+        cost = start;
+
+        start = System.nanoTime();
+
+        referenceTest();
+
+
+        start = System.nanoTime() - start;
+        System.out.println(" PT: " + start + " ns ");
+
+        cost = cost / start;
+        System.out.println(" cost: " + cost);
+    }
+
+    private static void referenceTest() {
+        int acum = 0;
+        int acum2 = 0;
+        int z = 1;
+        while ( z > 0 ) {
+            acum = acum2 = 0;
+            for (int i = 0; i < 10; i = i + 1) {
+                acum = acum + i;
+                acum2 = -acum + i;
+            }
+            z--;
+        }
+        System.out.println("Ref. test:  a: " + acum + " a2: " + acum2 );
     }
 }

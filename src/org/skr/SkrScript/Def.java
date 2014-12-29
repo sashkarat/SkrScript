@@ -19,8 +19,8 @@ public class Def {
     protected static final int PRIO_A             = 4; //
 
     protected static final byte OP_NOT             = 4; //  ! operator
-    protected static final byte OP_U_ADD           = 5; // unary + operator
-    protected static final byte OP_U_SUB           = 6; // unary - operator
+    public static final byte OP_U_PLUS          = 5; // unary + operator
+    public static final byte OP_U_MINUS         = 6; // unary - operator
     protected static final byte OP_TYPEOF          = 7; // sets dts of rval to lval
 
     protected static final byte OP_F_CALL          = 8; // function call [ push environment, set new environment, jump ]

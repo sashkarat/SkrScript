@@ -1,0 +1,25 @@
+function init() {
+
+    var acum = 0;
+    var acum2 = 0;
+    var z = 1;
+
+    while ( z > 0 ) {
+        acum = 0;
+        acum2 = 0;
+        for ( var i = 0; i < 10; i = i + 1 ) {
+            msg(" i: " + i );
+            acum = acum + i;
+            #acum2 = - acum + i;
+        }
+        z = z - 1;
+        msg( "a: " + acum + " a2: " + acum2 + " z: " + z);
+    }
+
+
+    return;
+}
+
+function run() {
+
+}

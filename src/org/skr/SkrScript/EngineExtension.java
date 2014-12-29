@@ -18,6 +18,7 @@ public abstract class EngineExtension {
     }
 
     protected abstract boolean opArithmetic( byte opCode, Value l, Value r, Value res, RunContext rc );
+    protected abstract boolean unaryOpArithmetic( byte opCode, Value r, Value res, RunContext rc );
     protected abstract String getDtsString( byte dts );
     protected abstract Object cast( Value value, byte dstDts, RunContext rc );
     protected abstract void setup();

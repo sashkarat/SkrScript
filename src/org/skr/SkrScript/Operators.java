@@ -14,13 +14,11 @@ public class Operators {
         switch (opCode) {
             case Def.OP_NOT:
                 return opNot( rc );
-            case Def.OP_U_ADD:
-                // funny operator, it does nothing
-                return true;
-            case Def.OP_U_SUB:
-                return opUnSub( rc );
             case Def.OP_TYPEOF:
                 return opTypeOf( rc );
+            case Def.OP_U_PLUS:
+            case Def.OP_U_MINUS:
+                return unaryOpArithmetic( opCode, rc );
             case Def.OP_DIV:
             case Def.OP_MUL:
             case Def.OP_MOD:
@@ -63,13 +61,7 @@ public class Operators {
 
     public static boolean opNot( RunContext rc ) {
         rc.obtainRv();
-        rc.l.setAsBool( ! rc.r.asBool() );
-        return true;
-    }
-
-    public static boolean opUnSub( RunContext rc ) {
-        rc.obtainRv();
-        rc.l.setAsFloat( - rc.r.asFloat(rc) );
+        rc.l.setAsBool( ! rc.r.asBool( rc ) );
         return true;
     }
 
@@ -79,12 +71,37 @@ public class Operators {
         return true;
     }
 
+    protected static boolean unaryOpArithmetic( byte opCode, RunContext rc ) {
+        rc.obtainRv();
+        if (opCode == Def.OP_U_MINUS) {
+            if (rc.r.isFloat()) {
+                rc.l.setAsFloat(-rc.r.asFloat(rc));
+                return true;
+            } else if (rc.r.isInt()) {
+                rc.l.setAsInt(-rc.r.asInt(rc));
+                return true;
+            }
+        }
+        if (opCode == Def.OP_U_PLUS) {
+            if (rc.r.isFloat()) {
+                rc.l.setAsFloat( rc.r.asFloat(rc));
+                return true;
+            } else if (rc.r.isInt()) {
+                rc.l.setAsInt( rc.r.asInt(rc));
+                return true;
+            }
+        }
+        return rc.extension != null && rc.extension.unaryOpArithmetic(opCode, rc.r, rc.l, rc);
+    }
+
     public static boolean opArithmetic( byte opCode, RunContext rc ) {
+
+
         rc.obtainLv();
         rc.obtainRv();
 
         if ( rc.l.isNumber() )
-            return opNumberArithmetic( opCode, rc );
+            return opNumberArithmetic(opCode, rc);
         if ( rc.l.isString() && opCode == Def.OP_ADD ) {
             rc.l.setAsString( rc.l.asString() + rc.r.asString() );
             return true;
@@ -96,8 +113,6 @@ public class Operators {
     }
 
     protected static boolean opNumberArithmetic(byte opCode,  RunContext rc ) {
-
-
         if ( rc.l.isFloat() || rc.r.isFloat()) {
             switch (opCode) {
                 case Def.OP_ADD:
@@ -167,7 +182,7 @@ public class Operators {
         rc.obtainLv();
 
         if ( rc.l.isBool() || rc.r.isBool() ) {
-            rc.l.setAsBool( rc.l.asBool() == rc.r.asBool() );
+            rc.l.setAsBool( rc.l.asBool( rc ) == rc.r.asBool( rc ) );
             return true;
         }
         if ( rc.l.isNull() )
@@ -182,7 +197,7 @@ public class Operators {
         rc.obtainLv();
 
         if ( rc.l.isBool() || rc.r.isBool() ) {
-            rc.l.setAsBool( rc.l.asBool() != rc.r.asBool() );
+            rc.l.setAsBool( rc.l.asBool(rc) != rc.r.asBool(rc) );
             return true;
         }
         if ( rc.l.isNull() )
@@ -196,8 +211,8 @@ public class Operators {
         rc.obtainLv();
         rc.obtainRv();
 
-        Boolean a = rc.l.asBool();
-        Boolean b = rc.r.asBool();
+        Boolean a = rc.l.asBool(rc);
+        Boolean b = rc.r.asBool(rc);
 
         if ( opCode == Def.OP_AND )
             rc.l.setAsBool(a && b);

@@ -8,7 +8,26 @@ public class Engine {
     RunContext rc = new RunContext( 8, 16);
     EngineExtension extension;
 
+    boolean errEnabled = true;
+    boolean outEnabled = true;
+
     public Engine() {
+    }
+
+    public boolean isErrEnabled() {
+        return errEnabled;
+    }
+
+    public void setErrEnabled(boolean errEnabled) {
+        this.errEnabled = errEnabled;
+    }
+
+    public boolean isOutEnabled() {
+        return outEnabled;
+    }
+
+    public void setOutEnabled(boolean outEnabled) {
+        this.outEnabled = outEnabled;
     }
 
     public void setExtension( EngineExtension extension ) {
@@ -34,6 +53,8 @@ public class Engine {
         rc.setSlot(slot);
         rc.reset();
         rc.setExtension( extension );
+        rc.setErrEnabled( errEnabled );
+        rc.setOutEnabled( outEnabled );
 
         if ( !RunContext.run(startPoint, rc) ) {
             printError("SkrScriptEngine. script execution failed. Script will be disabled.", rc);

@@ -264,7 +264,29 @@ public class Builder {
     protected static boolean isTokenInUsage( String token, BuildContext bc ) {
         return keywords.contains( token ) || fmapContainsName( bfuncMap, token )
                 || properties.containsKey( token ) || dataTypeSpec.containsKey( token ) ||
-                ((bc != null) && bc.defines.containsKey(token) || defines.containsKey( token ) );
+                ((bc != null) && ( bc.defines.containsKey(token) || fmapContainsName( bc.funcMap, token ) ) )
+                || defines.containsKey( token ) ;
+    }
+
+    protected static boolean isTokenDefined( String token, VariableMap vmap, BuildContext bc ) {
+        if ( token.length() == 0 )
+            return true;
+        char ch0 = token.charAt(0);
+        if ( ch0 == '\"' )
+            return true;
+        if ( ch0 == '(' || ch0 == ')' )
+            return true;
+        if ( Character.isDigit( ch0 ) || ch0 == '.' )
+            return true;
+        if ( operators.containsKey( token ) )
+            return true;
+        if ( isTokenInUsage( token, bc ) )
+            return true;
+        if ( bc.rmap.isVariable( token) )
+            return true;
+        if ( vmap.isVariable( token ) )
+            return true;
+        return false;
     }
 
     protected static int getFunctionId( String name, Byte argNum ) {
@@ -650,6 +672,7 @@ public class Builder {
     static String nextToken( BuildContext bc  ) {
         while ( bc.tknzr.hasMoreTokens() ) {
             String token = bc.tknzr.nextToken();
+//            printMsg("nextToken: token: \"" + token + "\"", bc );
             if (token.length() == 1) {
                 if ( isSpace(token) )
                     continue;
@@ -1363,6 +1386,13 @@ public class Builder {
                 expression.add("");
                 continue;
             }
+
+            if ( isComment( token ) ) {
+                skipLine( bc.tknzr, bc);
+                expression.add("");
+                continue;
+            }
+
             if ( token.equals("(") ) {
                 z++;
                 expression.add( token );
@@ -1502,6 +1532,13 @@ public class Builder {
 
         for ( int i = 0; i < expression.size; i++ ) {
             String token = expression.get(i);
+
+//            printMsg("compileExpression: " + token, bc);
+            if ( ! isTokenDefined( token, vmap, bc ) ) {
+                printError("compileExpression. Undefined token: " + token, bc);
+                return false;
+            }
+
             if ( token.isEmpty() )
                 continue;
             boolean fcall = ( fmapContainsName(bfuncMap, token) || fmapContainsName(bc.funcMap, token) );
@@ -1865,9 +1902,9 @@ public class Builder {
         if ( isLValue( prevOpCode ) )
             return opCode;
         if ( opCode == Def.OP_ADD ) {
-            return Def.OP_U_ADD;
+            return Def.OP_U_PLUS;
         } else if ( opCode == Def.OP_SUB ) {
-            return Def.OP_U_SUB;
+            return Def.OP_U_MINUS;
         }
 
         return opCode;

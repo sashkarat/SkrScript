@@ -35,7 +35,6 @@ define testNumber 1e-1
 
 function init() {
 
-
     msg("*** Test call 1-arg and no-arg functions");
     3+one( nof() );
 
@@ -157,8 +156,12 @@ function init() {
     msg("prop: " + prop );
 
 
+    #msg(" never calling message ");
 
-
+    msg(" **** integer unary minus: " + - 1 );
+    msg(" **** integer unary plus: " + + 1 );
+    msg(" **** float unary minus: " + -1. );
+    msg(" **** float unary plus: " + + 1. );
 
     if ( true ) {
         setSlotEnabled( false );

@@ -25,8 +25,7 @@ public class RunContext {
     Stack<Integer> varNumStack;
     Stack<Integer> retCodeStack;
 
-    Stack<Object> dataStack;
-    Stack<Byte> dtsStack;
+    ValueStack valueStack;
 
     Slot slot;
     Script script;
@@ -40,20 +39,40 @@ public class RunContext {
     ValuePool vars = new ValuePool( 128 );
     ValuePool regs;
 
+    boolean outEnabled = true;
+    boolean errEnabled = true;
+
     public final Value l = new Value();
     public final Value r = new Value();
     public final PropertyRef pr = new PropertyRef();
 
-    public RunContext(int stackSize, int dataStackSize) {
+
+
+    public RunContext(int stackSize, int valueStackSize) {
         if ( stackSize > 0 ) {
             varNumStack = new Stack<Integer>( stackSize );
             varOffsetStack = new Stack<Integer>( stackSize );
             retCodeStack = new Stack<Integer>( stackSize );
         }
-        if ( dataStackSize > 0 ) {
-            dataStack = new Stack<Object>( dataStackSize );
-            dtsStack = new Stack<Byte>( dataStackSize );
+        if ( valueStackSize > 0 ) {
+            valueStack = new ValueStack( valueStackSize );
         }
+    }
+
+    public boolean isOutEnabled() {
+        return outEnabled;
+    }
+
+    public void setOutEnabled(boolean outEnabled) {
+        this.outEnabled = outEnabled;
+    }
+
+    public boolean isErrEnabled() {
+        return errEnabled;
+    }
+
+    public void setErrEnabled(boolean errEnabled) {
+        this.errEnabled = errEnabled;
     }
 
     public void setSlot(Slot slot) {
@@ -75,8 +94,7 @@ public class RunContext {
         varOffsetStack.reset();
         varNumStack.reset();
         retCodeStack.reset();
-        dataStack.reset();
-        dtsStack.reset();
+        valueStack.reset();
         extension = null;
     }
 
@@ -123,29 +141,26 @@ public class RunContext {
     }
 
     protected void pushLv() {
-        dataStack.push( l.val() );
-        dtsStack.push( l.dts() );
+        valueStack.push( l );
 //        Engine.printMsg("pushLv", l.toString(), this );
     }
 
     protected void pushRv() {
-        dataStack.push( r.val() );
-        dtsStack.push( r.dts() );
+        valueStack.push( r );
 //        Engine.printMsg("pushRv", r.toString(), this );
     }
     protected void popLv() {
-        l.set( dataStack.pop(), dtsStack.pop());
+        valueStack.pop( l );
 //        Engine.printMsg("popLv", l.toString(), this );
     }
 
     protected void popRv() {
-        r.set( dataStack.pop(), dtsStack.pop());
+        valueStack.pop( r );
 //        Engine.printMsg("popRv", r.toString(), this );
     }
 
     protected void popArg( ValuePool args, int index ) {
-        args.set( dataStack.pop(), dtsStack.pop(), index);
-
+        valueStack.pop( args.get( index ) );
     }
 
     protected void fcall( int addr, byte argNumber ) {
@@ -170,9 +185,9 @@ public class RunContext {
     }
 
     protected void jumpF( int addr ) {
-        if ( !l.isBool() )
+        if ( ! l.isBool() )
             return;
-        if ( ! l.asBool() )
+        if ( ! l.asBool( this ) )
             pos = addr;
     }
 
@@ -198,37 +213,39 @@ public class RunContext {
 
     protected void readValue( Value v ) {
         byte dts = nextByte();
-        v.set( readValueVal(dts), dts );
-    }
 
-    protected Object readValueVal(byte dts) {
-//        Engine.printMsg("readValueVal", "dts: " + dts, this);
         switch ( dts ) {
             case Def.DTS_NULL:
-                return null;
+                v.setAsNull();
+                return;
             case Def.DTS_REG:
-                return readInt();
+                v.setAsReg( readInt() );
+                return;
             case Def.DTS_VAR:
-                return readInt();
+                v.setAsVar( readInt() );
+                return;
             case Def.DTS_INT:
-                return readInt();
+                v.setAsInt( readInt() );
+                return;
             case Def.DTS_FLOAT:
-                return readFloat();
+                v.setAsFloat( readFloat() );
+                return;
             case Def.DTS_BOOL:
-                return ( nextByte() != 0);
+                v.setAsBool( nextByte() != 0 );
+                return;
             case Def.DTS_STRING:
-                return script.strings[ readInt() ];
+                v.setAsString( script.strings[ readInt() ] );
+                return ;
             case Def.DTS_TYPE:
-                return nextByte();
+                v.set( nextByte(), dts );
+                return;
             case Def.DTS_PROP_CODE:
-                return readInt();
+                v.setAsPropCode( readInt() );
+                return;
             default:
-                Engine.printError("readValueVal", "Undefined dts: " + dts, this);
-                return null;
+                Engine.printError("readValue", "Undefined dts: " + dts, this);
         }
     }
-
-
 
     protected static boolean run( int entryPoint, RunContext rc ) {
 

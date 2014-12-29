@@ -6,6 +6,8 @@ import java.util.Objects;
  * Created by rat on 06.12.14.
  */
 public class Value {
+    private boolean bval;
+
     private Object val = null;
     private byte dts = Def.DTS_NULL;
 
@@ -30,8 +32,7 @@ public class Value {
         else if ( dts == Def.DTS_PROP_REF ) {
             return PropertyAccess.setProperty((RunContext.PropertyRef) val, v, rc );
         } else {
-            val = v.val;
-            dts = v.dts;
+            set(v);
         }
         return true;
     }
@@ -82,10 +83,10 @@ public class Value {
 
     public Value obtain( RunContext rc ) {
         if ( dts == Def.DTS_VAR ) {
-            Integer idx = (Integer) val;
+            int idx = (Integer) val;
             set(rc.vars.get(idx));
         } else if ( dts == Def.DTS_REG ) {
-            Integer idx = (Integer) val;
+            int idx = (Integer) val;
             set(rc.regs.get(idx));
         } else if ( dts == Def.DTS_PROP_REF ) {
             RunContext.PropertyRef pr = (RunContext.PropertyRef) val;
@@ -116,30 +117,49 @@ public class Value {
     }
 
     public void setAsBool(Boolean b ) {
-        val = b;
+        bval = b;
         dts = Def.DTS_BOOL;
     }
 
-    public void set(Object v, byte dts ) {
-        val = v;
-        this.dts = dts;
+    public void setAsPropCode(Integer code ) {
+        dts = Def.DTS_PROP_CODE;
+        val = code;
     }
 
-    public Boolean asBool() {
+    public void setAsReg( Integer index ) {
+        dts = Def.DTS_REG;
+        val = index;
+    }
+
+    public void setAsVar( Integer index ) {
+        dts = Def.DTS_VAR;
+        val = index;
+    }
+
+    public void set(Object v, byte dts ) {
+        this.dts = dts;
+        this.val = v;
+    }
+
+    public Boolean asBool( RunContext rc ) {
         if ( dts == Def.DTS_BOOL )
-            return (Boolean) val;
+            return bval;
         if ( dts == Def.DTS_INT )
-            return (Integer) val != 0;
+            return (Integer)val != 0;
         if ( dts == Def.DTS_FLOAT )
-            return (Float) val != 0.0f;
-        return val != null;
+            return (Float)val != 0.0f;
+        if ( val == null )
+            return false;
+        if ( rc.extension != null )
+            return (Boolean) rc.extension.cast( this, Def.DTS_BOOL, rc );
+        return true;
     }
 
     public Float asFloat( RunContext rc) {
         if ( dts == Def.DTS_FLOAT )
-            return (Float) val;
+            return (Float) val ;
         if ( dts == Def.DTS_INT )
-            return  ( (Integer) val ).floatValue();
+            return  ((Integer) val).floatValue();
         if ( val == null || rc.extension == null)
             return null;
         return (Float) rc.extension.cast( this, Def.DTS_FLOAT, rc );
@@ -149,10 +169,31 @@ public class Value {
         if ( dts == Def.DTS_INT )
             return (Integer) val;
         if ( dts == Def.DTS_FLOAT )
-            return  ( (Float) val ).intValue();
+            return ((Float) val).intValue();
         if ( val == null || rc.extension == null)
             return null;
         return (Integer) rc.extension.cast( this, Def.DTS_INT, rc );
+    }
+
+    public Object as(byte dts, RunContext rc ) {
+        switch ( dts ) {
+            case Def.DTS_INT:
+                return asInt( rc );
+            case Def.DTS_FLOAT:
+                return asFloat( rc );
+            case Def.DTS_BOOL:
+                return asBool( rc );
+            case Def.DTS_STRING:
+                return asString();
+            case Def.DTS_TYPE:
+                return asType();
+            case Def.DTS_PROP_CODE:
+                return asPropertyCode();
+            default:
+                if ( val == null || rc.extension == null )
+                    return null;
+                return rc.extension.cast( this, dts, rc);
+        }
     }
 
     public String asString() {
@@ -169,8 +210,8 @@ public class Value {
 
     public Integer asPropertyCode() {
         if ( dts == Def.DTS_PROP_CODE)
-            return (Integer)val;
-        return null;
+            return (Integer) val;
+        return -1;
     }
 
     @Override
@@ -185,5 +226,11 @@ public class Value {
         sb.append(Engine.getDtsStr( dts, null ));
         sb.append(")");
         return sb.toString();
+    }
+
+    public Value cpy() {
+        Value v = new Value();
+        v.set( this );
+        return v;
     }
 }

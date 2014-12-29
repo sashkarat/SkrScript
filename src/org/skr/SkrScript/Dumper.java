@@ -77,9 +77,9 @@ public class Dumper {
         switch ( opCode ) {
             case Def.OP_NOT:
                 return "OP !";
-            case Def.OP_U_ADD:
+            case Def.OP_U_PLUS:
                 return "OP u +";
-            case Def.OP_U_SUB:
+            case Def.OP_U_MINUS:
                 return "OP u -";
             case Def.OP_TYPEOF:
                 return "OP typeof";
