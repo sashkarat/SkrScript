@@ -1,22 +1,28 @@
+function test();
+
 function init() {
+    test();
+}
+
+function run() {
+
+}
+
+function test() {
 
     var acum = 0;
     var acum2 = 0;
-    var z = 1000;
+    var z = 1;
 
     while ( z > 0 ) {
         acum = 0;
         acum2 = 0;
-        for ( var i = 0; i < 10000; i = i + 1 ) {
+        for ( var i = 0; i < 10; i = i + 1 ) {
             acum = acum + i;
             acum2 = - acum + i;
         }
         z = z - 1;
     }
-    msg( "a: " + acum + " a2: " + acum2 + " z: " + z);
+   # msg( "a: " + acum + " a2: " + acum2 + " z: " + z);
     return;
-}
-
-function run() {
-
 }

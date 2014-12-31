@@ -56,6 +56,7 @@ public class Engine {
         rc.setErrEnabled( errEnabled );
         rc.setOutEnabled( outEnabled );
 
+
         if ( !RunContext.run(startPoint, rc) ) {
             printError("SkrScriptEngine. script execution failed. Script will be disabled.", rc);
             slot.script.enabled = false;

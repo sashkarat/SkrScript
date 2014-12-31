@@ -167,35 +167,38 @@ public class Test {
         System.out.println("Init point: " + slot.getScript().initPoint);
 
         float cost;
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         engine.init(slot);
 
-        long tLen = System.currentTimeMillis() - start;
+        long tLen = System.nanoTime() - start;
 
-        System.out.println(" PT: " + tLen + " ms ");
+        System.out.println(" PT: " + (float) tLen * 0.000001 + " ms ");
 
         long rLen = referenceTest();
-        System.out.println(" PT: " + rLen + " ms ");
+        System.out.println(" PT: " + (float) rLen * 0.000001 + " ms ");
+        System.out.println(" PT: " + rLen  + " ns ");
 
         cost = (float) tLen / (float) rLen;
         System.out.println(" cost: " + cost);
     }
 
     private static long referenceTest() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
+
         int acum = 0;
         int acum2 = 0;
-        int z = 1000;
+        int z = 1;
         while ( z > 0 ) {
             acum = acum2 = 0;
-            for (int i = 0; i < 10000; i = i + 1) {
+            for (int i = 0; i < 10; i = i + 1) {
                 acum = acum + i;
                 acum2 = -acum + i;
             }
             z--;
         }
         System.out.println("Ref. test:  a: " + acum + " a2: " + acum2 );
-        return System.currentTimeMillis() - start;
+
+        return System.nanoTime() - start;
     }
 }

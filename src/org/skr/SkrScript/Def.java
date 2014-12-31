@@ -73,6 +73,8 @@ public class Def {
 
     // engine commands
 
+    protected static final byte CMD_OFFSET         = 30;
+
     protected static final byte SETRV              = 30; // set data to right value
     protected static final byte SETLV              = 31; // set data to left value
     protected static final byte POPRV              = 32; // pop data from stack to right value
