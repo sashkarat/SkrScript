@@ -1,3 +1,5 @@
+import bsh.EvalError;
+import bsh.Interpreter;
 import org.skr.SkrScript.*;
 
 import java.io.*;
@@ -110,39 +112,10 @@ public class Test {
     }
 
 
-    public static void main( String [] arg ) throws IOException {
+    public static void main( String [] arg ) throws IOException, EvalError {
 
-        String path = new File(".").getCanonicalPath();
-        path = path+"/data/testIter.script";
-
-        File file = new File(path);
-
-        InputStream stream = Test.class.getResourceAsStream("/data/testIter.script");
-
-        if ( stream == null )
-            stream = new FileInputStream(file);
-
-        BufferedReader br;
-        try {
-            br = new BufferedReader(
-                    new InputStreamReader(
-                            stream, "UTF-8"
-                    )
-            );
-        } catch ( UnsupportedEncodingException e ) {
-            e.printStackTrace();
-            return;
-        }
-        String s;
-        String txt = "";
-        try {
-            while ((s = br.readLine()) != null) {
-                txt += s;
-                txt += "\n";
-            }
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
+        String txt = readFileFromData("testIter.script");
+        txt = readFileFromData("testHeartCurve.script");
 
         EngineTestExtension ee = new EngineTestExtension();
         ee.init();
@@ -156,49 +129,161 @@ public class Test {
         Slot slot = new Slot();
         slot.setScript(script);
 
-        Dumper.dump(script);
+//        Dumper.dump(script);
 //        ScriptDumper.dumpBytes( SkrScript, " ");
 
         Engine engine = new Engine();
         engine.setExtension( ee );
 
-        engine.setOutEnabled(true);
+//        engine.setOutEnabled(true);
 
         System.out.println("Init point: " + slot.getScript().initPoint);
 
-        float cost;
-        long start = System.nanoTime();
+        // execution tests
 
-        engine.init(slot);
+        System.out.println("Execution tests");
 
-        long tLen = System.nanoTime() - start;
+        float refDur = referenceTest();
 
-        System.out.println(" PT: " + (float) tLen * 0.000001 + " ms ");
+        float skrDur = skrSkriptTest( engine, slot );
 
-        long rLen = referenceTest();
-        System.out.println(" PT: " + (float) rLen * 0.000001 + " ms ");
-        System.out.println(" PT: " + rLen  + " ns ");
+        float bshDur = beanShellTest();
 
-        cost = (float) tLen / (float) rLen;
-        System.out.println(" cost: " + cost);
+        float skrCost = skrDur / refDur;
+        float bshCost = bshDur / refDur;
+
+        float bshSkrCost = bshDur / skrDur;
+
+        System.out.println("SKR cost: " + skrCost );
+        System.out.println("BSH cost: " + bshCost );
+        System.out.println("BSH/SKR cost: " + bshSkrCost );
     }
+
+    private static long skrSkriptTest(Engine engine, Slot slot ) {
+
+        long start = System.nanoTime();
+        engine.init(slot);
+        start = System.nanoTime() - start;
+
+        printProcessingTime("skrSkriptTest", start);
+
+        return start;
+    }
+
 
     private static long referenceTest() {
         long start = System.nanoTime();
 
+        //payload code begin
+//        refIter();
+        refHeartCurve();
+        //payload code end
+
+        start = System.nanoTime() - start;
+
+        printProcessingTime("referenceTest", start);
+
+
+        return start;
+    }
+
+
+
+    private static long beanShellTest() throws IOException, EvalError {
+        String txt = readFileFromData( "testIter.bsh" );
+        txt = readFileFromData( "testHeartCurve.bsh" );
+
+        Interpreter intr = new Interpreter();
+
+        long start = System.nanoTime();
+        intr.eval(txt);
+        start = System.nanoTime() - start;
+
+        printProcessingTime("beanShellTest", start);
+
+        return start;
+    }
+
+    public static String readFileFromData(String fileName ) throws IOException {
+
+        String path = new File(".").getCanonicalPath();
+        path = path+"/data/" + fileName;
+
+        File file = new File(path);
+
+        InputStream stream = Test.class.getResourceAsStream("/data/" + fileName);
+
+        if ( stream == null )
+            stream = new FileInputStream(file);
+
+        BufferedReader br;
+        br = new BufferedReader(
+                new InputStreamReader(
+                        stream, "UTF-8"
+                )
+        );
+        String s;
+        String txt = "";
+        while ((s = br.readLine()) != null) {
+            txt += s;
+            txt += "\n";
+        }
+
+        return txt;
+    }
+
+    private static void printProcessingTime(String tag, long time ) {
+        System.out.println( tag + " PT: " + time + "ns " + (float) time * 0.000001 + "ms ");
+    }
+
+
+
+    private static int refIter() {
         int acum = 0;
         int acum2 = 0;
-        int z = 1;
+        int z = 100;
         while ( z > 0 ) {
             acum = acum2 = 0;
-            for (int i = 0; i < 10; i = i + 1) {
+            for (int i = 0; i < 1000; i = i + 1) {
                 acum = acum + i;
                 acum2 = -acum + i;
             }
             z--;
         }
-        System.out.println("Ref. test:  a: " + acum + " a2: " + acum2 );
-
-        return System.nanoTime() - start;
+        return acum2;
     }
+
+    private static float refHeartCurve() {
+
+        float acuum = 0;
+        float delta = 0.00001f;
+
+        for ( float phi = 0; phi < Math.PI * 2; phi += delta ) {
+            float r = 2f - 2f * (float)Math.sin( phi ) + (float)Math.sin( phi ) *
+                    (float)Math.sqrt((float)Math.abs( (float)Math.cos( phi ) ) ) / ( (float)Math.sin( phi ) + 1.4f );
+
+//            float a = (float)Math.sin( phi );
+//            float b = (float)Math.sqrt((float)Math.abs( (float)Math.cos( phi ) ) );
+//            float c = (float)Math.sin( phi ) + 1.4f ;
+//
+//            float d = b / c;
+//
+//            float a2 = a * d;
+//
+//
+//            float r = 2f - 2f*a + a2;
+
+
+
+            acuum += r;
+//            System.out.println("refHeartCurve: " + phi + " " + a + " " + b + " " + c +
+//                    " " + d + " " + a2 + " " + r + " " + acuum);
+        }
+
+//        System.out.println("refHeartCurve: acuum: " + acuum );
+
+        return acuum;
+    }
+
+
 }

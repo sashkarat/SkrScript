@@ -1,0 +1,9 @@
+float acuum = 0;
+float delta = 0.00001f;
+
+for ( float phi = 0; phi < Math.PI * 2; phi += delta ) {
+    float r = (float) (2 - 2 * Math.sin( phi ) + Math.sin( phi ) *
+                        Math.sqrt(Math.abs( Math.cos( phi ) ) ) / ( Math.sin( phi ) + 1.4 ));
+    acuum += r;
+}
+

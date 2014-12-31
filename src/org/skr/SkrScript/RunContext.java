@@ -211,133 +211,6 @@ public class RunContext {
 //    private static long acuum = 0;
 //    private static long s;
 
-    private static interface OpI {
-        public boolean op( RunContext rc ) ;
-    }
-
-
-    private static OpI[] opArray = new OpI[100];
-
-    static {
-        opArray[ Def.SETRV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.readValue(rc.r);
-                return true;
-            }
-        };
-
-        opArray[ Def.SETRV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.readValue(rc.r);
-                return true;
-            }
-        };
-        opArray[ Def.SETLV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.readValue( rc.l );
-                return true;
-            }
-        };
-        opArray[ Def.POPRV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.valueStack.pop(rc.r);
-                return true;
-            }
-        };
-        opArray[ Def.PUSHRV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.valueStack.push(rc.r);
-                return true;
-            }
-        };
-        opArray[ Def.POPLV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.valueStack.pop(rc.l);
-                return true;
-            }
-        };
-        opArray[ Def.PUSHLV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.valueStack.push(rc.l);
-                return true;
-            }
-        };
-        opArray[ Def.JUMP ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.pos = rc.readInt();
-                return true;
-            }
-        };
-        opArray[ Def.JUMPF ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.jumpF( rc.readInt() );
-                return true;
-            }
-        };
-        opArray[ Def.RET ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                if ( rc.retCode < 0 )
-                    return onRunDone( rc );
-                rc.ret();
-                return true;
-            }
-        };
-        opArray[ Def.INCVARNUM ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.varNum++;
-                return true;
-            }
-        };
-        opArray[ Def.DECVARNUM ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-            int count = rc.readInt();
-                rc.varNum -= count;
-                return true;
-            }
-        };
-        opArray[ Def.OBTAINLV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.l.obtain( rc );
-                return true;
-            }
-        };
-        opArray[ Def.OBTAINRV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.r.obtain( rc );
-                return true;
-            }
-        };
-        opArray[ Def.LVTORV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.r.set(rc.l);
-                return true;
-            }
-        };
-        opArray[ Def.RVTOLV ] = new OpI() {
-            @Override
-            public boolean op(RunContext rc) {
-                rc.l.set( rc.r );
-                return true;
-            }
-        };
-    }
-
-
     protected static boolean run( int entryPoint, RunContext rc ) {
 
         rc.pos = entryPoint;
@@ -347,8 +220,8 @@ public class RunContext {
             rc.opPos = rc.pos;
             byte opCode = rc.nextByte();
 
-            if ( Def.isOperator(opCode) ) {
 
+            if ( Def.isOperator(opCode) ) {
                 if ( opCode == Def.OP_F_CALL ) {
                     int faddr = rc.readInt();
                     byte numOfArg = rc.nextByte();
@@ -368,18 +241,58 @@ public class RunContext {
                 continue;
             }
 
-            if ( opCode == Def.RET ) {
-                if ( rc.retCode < 0 )
-                    return onRunDone( rc );
-                rc.ret();
-                continue;
+            switch ( opCode ) {
+                case Def.SETRV:
+                    rc.readValue(rc.r);
+                  continue;
+                case Def.SETLV:
+                    rc.readValue( rc.l );
+                    continue;
+                case Def.POPRV:
+                    rc.valueStack.pop( rc.r );
+                    continue;
+                case Def.PUSHRV:
+                    rc.valueStack.push( rc.r );
+                    continue;
+                case Def.POPLV:
+                    rc.valueStack.pop( rc.l );
+                    continue;
+                case Def.PUSHLV:
+                    rc.valueStack.push( rc.l );
+                    continue;
+                case Def.JUMP:
+                    rc.pos = rc.readInt();
+                    continue;
+                case Def.JUMPF:
+                    rc.jumpF( rc.readInt() );
+                    continue;
+                case Def.RET:
+                    if ( rc.retCode < 0 )
+                        return onRunDone( rc );
+                    rc.ret( );
+                    continue;
+                case Def.INCVARNUM:
+                    rc.varNum++;
+                    continue;
+                case Def.DECVARNUM:
+                    int count = rc.readInt();
+                    rc.varNum -= count;
+                    continue;
+                case Def.OBTAINLV:
+                    rc.l.obtain( rc );
+                    continue;
+                case Def.OBTAINRV:
+                    rc.r.obtain( rc );
+                    continue;
+                case Def.LVTORV:
+                    rc.r.set( rc.l );
+                    continue;
+                case Def.RVTOLV:
+                    rc.l.set( rc.r );
+                    continue;
+
             }
 
-            OpI iop = opArray[ opCode ];
-            if ( iop == null )
-                break;
-            if ( iop.op( rc ) )
-                continue;
 
             Engine.printError("run", "Undefined opCode: " + opCode, rc);
             break;
@@ -387,97 +300,6 @@ public class RunContext {
 
         return Engine.printError("run", "Unexpected code finalization", rc);
     }
-
-
-//    protected static boolean run( int entryPoint, RunContext rc ) {
-//
-//        rc.pos = entryPoint;
-//
-//        while ( rc.hasMoreBytes() ) {
-//
-//            rc.opPos = rc.pos;
-//            byte opCode = rc.nextByte();
-//
-//
-//            if ( Def.isOperator(opCode) ) {
-//                if ( opCode == Def.OP_F_CALL ) {
-//                    int faddr = rc.readInt();
-//                    byte numOfArg = rc.nextByte();
-//                    if ( faddr <= Def.FUNCTIONS_START_ADDR ) {
-//                        if ( ! BuildInFunctions.call(faddr, rc, numOfArg) ) {
-//                            return false;
-//                        }
-//                        continue;
-//                    }
-//                    rc.fcall( faddr, numOfArg );
-//                    continue;
-//                }
-//
-//                if ( ! Operators.execOp(opCode, rc) ) {
-//                    return false;
-//                }
-//                continue;
-//            }
-//
-//            switch ( opCode ) {
-//                case Def.SETRV:
-//                    rc.readValue(rc.r);
-//                  continue;
-//                case Def.SETLV:
-//                    rc.readValue( rc.l );
-//                    continue;
-//                case Def.POPRV:
-//                    rc.valueStack.pop( rc.r );
-//                    continue;
-//                case Def.PUSHRV:
-//                    rc.valueStack.push( rc.r );
-//                    continue;
-//                case Def.POPLV:
-//                    rc.valueStack.pop( rc.l );
-//                    continue;
-//                case Def.PUSHLV:
-//                    rc.valueStack.push( rc.l );
-//                    continue;
-//                case Def.JUMP:
-//                    rc.pos = rc.readInt();
-//                    continue;
-//                case Def.JUMPF:
-//                    rc.jumpF( rc.readInt() );
-//                    continue;
-//                case Def.RET:
-//                    if ( rc.retCode < 0 )
-//                        return onRunDone( rc );
-//                    rc.ret( );
-//                    continue;
-//                case Def.INCVARNUM:
-//                    rc.varNum++;
-//                    continue;
-//                case Def.DECVARNUM:
-//                    int count = rc.readInt();
-//                    rc.varNum -= count;
-//                    continue;
-//                case Def.OBTAINLV:
-//                    rc.l.obtain( rc );
-//                    continue;
-//                case Def.OBTAINRV:
-//                    rc.r.obtain( rc );
-//                    continue;
-//                case Def.LVTORV:
-//                    rc.r.set( rc.l );
-//                    continue;
-//                case Def.RVTOLV:
-//                    rc.l.set( rc.r );
-//                    continue;
-//
-//            }
-//
-//
-//            Engine.printError("run", "Undefined opCode: " + opCode, rc);
-//            break;
-//        }
-//
-//        return Engine.printError("run", "Unexpected code finalization", rc);
-//    }
 
     protected static boolean onRunDone( RunContext rc ) {
 

@@ -127,6 +127,7 @@ public class Operators {
                     return true;
                 case Def.OP_DIV:
                     rc.l.setAsFloat( rc.l.asFloat(rc) / rc.r.asFloat(rc) );
+                    return true;
                 case Def.OP_MOD:
                     rc.l.setAsFloat( rc.l.asFloat(rc) % rc.r.asFloat(rc)  );
                     return true;

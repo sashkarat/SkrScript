@@ -12,12 +12,12 @@ function test() {
 
     var acum = 0;
     var acum2 = 0;
-    var z = 1;
+    var z = 100;
 
     while ( z > 0 ) {
         acum = 0;
         acum2 = 0;
-        for ( var i = 0; i < 10; i = i + 1 ) {
+        for ( var i = 0; i < 1000; i = i + 1 ) {
             acum = acum + i;
             acum2 = - acum + i;
         }

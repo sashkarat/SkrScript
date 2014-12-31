@@ -1,0 +1,38 @@
+function test();
+
+function init() {
+    test();
+}
+
+function run() {
+
+}
+
+function test() {
+
+    var acuum = 0;
+    var delta = 0.00001f;
+
+    for ( var phi = 0.0; phi < PI * 2.0; phi = phi + delta ) {
+        var r = 2 - 2 * sin( phi ) + sin( phi ) *
+                            sqrt( abs( cos( phi ) ) ) / ( sin( phi ) + 1.4 );
+
+        #var a = sin( phi );
+        #var b = sqrt(abs( cos( phi ) ) );
+        #var c = sin( phi ) + 1.4 ;
+
+        #var d = b / c;
+
+        #var a2 = a * d;
+
+        #var r = 2 - 2*a + a2;
+
+
+
+        acuum = acuum + r;
+        #msg("" + phi + " " + a + " " + b + " " + c +
+        #       " " + d + " " + a2 + " " + r + " " + acuum);
+    }
+
+    #msg("acuum: " + acuum );
+}
