@@ -5,7 +5,7 @@ package org.skr.SkrScript;
  */
 public class Def {
 
-    // operations and  priorities
+    // opCodes and  priorities
 
 
     protected static final int PRIO_MIN             = 1; //
@@ -90,6 +90,11 @@ public class Def {
     protected static final byte OBTAINRV           = 42; // converts rval DTS_REG (DTS_VAR) to not Reg(Var) type or does nothing
     protected static final byte LVTORV             = 43; // copies lvalue to rvalue
     protected static final byte RVTOLV             = 44; // copies rvalue to lvalue
+    protected static final byte POPVAR             = 45; // pop data to var
+    protected static final byte PUSHLVRV           = 46; // push lval and rval
+    protected static final byte LVTORVPOPLV        = 47; // copies lval to rval and pop lval
+    protected static final byte RVTOVAR            = 48; // set rval to var or reg
+
 
 
     // data type specifiers

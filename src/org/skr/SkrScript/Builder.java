@@ -392,84 +392,19 @@ public class Builder {
         public void putOp( byte opCode ) {
             if ( Builder.verboseLevel > 2 )
                 printMsg("putOp: " + Dumper.getOpCodeStr(opCode), this);
-            optimizedAdd( opCode );
+            bytes.add(opCode);
+            lastOpCode = opCode;
+        }
+
+        public void putInt( int val ) {
+            Builder.putInt(val, bytes);
         }
 
         public void putDecVar( VariableMap vmap ) {
             if ( vmap.map.size() == 0 )
                 return;
             putOp( Def.DECVARNUM );
-            putInt( vmap.map.size(), bytes );
-        }
-
-        private void optimizedAdd(byte opCode ) {
-            int lc = getLastOpCode();
-
-            if ( Def.isDts(opCode) ) {
-
-                if ( lc == Def.SETRV )
-                    lastSetRvDts = opCode;
-                else if ( lc == Def.SETLV )
-                    lastSetLvDts = opCode;
-            }
-
-            switch ( opCode ) {
-                case Def.POPLV :
-                    if ( lc == Def.PUSHRV ) {
-                        bytes.pop();
-                        opCode = Def.RVTOLV;
-                        byte t = lastSetRvDts;
-                        lastSetRvDts = lastSetLvDts;
-                        lastSetLvDts = t;
-                        break;
-                    }
-                    if ( lc == Def.PUSHLV ) {
-                        bytes.pop();
-                        lastOpCode = 0;
-                        return;
-                    }
-                    lastSetLvDts = 0;
-                    break;
-                case Def.POPRV :
-                    if ( lc == Def.PUSHLV ) {
-                        bytes.pop();
-                        opCode = Def.LVTORV;
-                        byte t = lastSetRvDts;
-                        lastSetRvDts = lastSetLvDts;
-                        lastSetLvDts = t;
-                        break;
-                    }
-                    if ( lc == Def.PUSHRV ) {
-                        bytes.pop();
-                        lastOpCode = 0;
-                        return;
-                    }
-                    lastSetRvDts = 0;
-                    break;
-                case Def.OBTAINRV :
-                    if ( lastSetRvDts != Def.DTS_REG && lastSetRvDts != Def.DTS_VAR )
-                        return;
-                    break;
-                case Def.OBTAINLV :
-                    if ( lastSetLvDts != Def.DTS_REG && lastSetLvDts != Def.DTS_VAR )
-                        return;
-                    break;
-                case Def.PUSHLV:
-                    if ( lc == Def.RVTOLV ) {
-                        bytes.pop();
-                        opCode = Def.PUSHRV;
-                        break;
-                    }
-                    if ( lc == Def.POPLV ) {
-                        bytes.pop();
-                        lastOpCode = 0;
-                        return;
-                    }
-                    break;
-            }
-
-            bytes.add(opCode);
-            lastOpCode = opCode;
+            putInt( vmap.map.size() );
         }
 
         public boolean isFuncReturnable(String name, byte argNum ) {
@@ -490,47 +425,47 @@ public class Builder {
 
 
 
-    public static boolean build( String text, Script script ) {
-        if ( verboseLevel > 0)
-            System.out.println( "build.started");
+    public static boolean build( String text, Script script, boolean optimize ) {
+        if (verboseLevel > 0)
+            System.out.println("build.started");
 
         BuildContext bc = new BuildContext();
 
-        bc.tknzr = new StringTokenizer( text, delimitersStr, true);
+        bc.tknzr = new StringTokenizer(text, delimitersStr, true);
 
-        while ( bc.tknzr.hasMoreTokens() ) {
-            String token = nextToken( bc );
-            if ( token == null )
+        while (bc.tknzr.hasMoreTokens()) {
+            String token = nextToken(bc);
+            if (token == null)
                 break;
-            if ( token.equals("function") ) {
+            if (token.equals("function")) {
                 if (!buildFunction(null, bc)) {
                     printError("build.failed", null);
                     return false;
                 }
-            } else if ( token.equals("reg") ) {
+            } else if (token.equals("reg")) {
                 if (!parseGlobalRegDeclaration(bc)) {
                     printError("build.failed", null);
                     return false;
                 }
-            } else if ( token.equals("define") ) {
-                token = nextToken( bc );
-                if ( token == null )
+            } else if (token.equals("define")) {
+                token = nextToken(bc);
+                if (token == null)
                     break;
-                if ( !isWord( token ) || isTokenInUsage( token, null ) ) {
-                    printError("build. define: token is already in usage", bc );
+                if (!isWord(token) || isTokenInUsage(token, null)) {
+                    printError("build. define: token is already in usage", bc);
                     return false;
                 }
                 String defineStr = token;
-                token = nextToken( bc );
-                if ( token ==  null )
+                token = nextToken(bc);
+                if (token == null)
                     break;
-                token = readDefinitionToken( token,  bc );
-                if ( verboseLevel > 1)
-                    printMsg("Build. define: " + defineStr + " " + token, bc );
-                if ( token == null ) {
+                token = readDefinitionToken(token, bc);
+                if (verboseLevel > 1)
+                    printMsg("Build. define: " + defineStr + " " + token, bc);
+                if (token == null) {
                     break;
                 }
-                bc.defines.put( defineStr, token );
+                bc.defines.put(defineStr, token);
 
             } else {
                 printError("build. Unexpected token: " + token, bc);
@@ -538,46 +473,47 @@ public class Builder {
             }
         }
 
-        while ( !bc.fcallAddrStack.isEmpty() ) {
+        while (!bc.fcallAddrStack.isEmpty()) {
             Triple<String, Byte, Integer> tp = bc.fcallAddrStack.pop();
-            int fid = getFunctionId( tp.a, tp.b);
-            if ( !bc.funcMap.containsKey( fid ) ) {
-                printError("build. Call function: " + tp.a + "@" + tp.b + " Function nod found.", null );
+            int fid = getFunctionId(tp.a, tp.b);
+            if (!bc.funcMap.containsKey(fid)) {
+                printError("build. Call function: " + tp.a + "@" + tp.b + " Function nod found.", null);
                 return false;
             }
             FunctionDesc fdesc = bc.funcMap.get(fid);
             int addr = fdesc.address;
             if (addr < 0) {
-                printError("build. Call function: " + fdesc + ". Entry point not found ", null );
+                printError("build. Call function: " + fdesc + ". Entry point not found ", null);
                 return false;
             }
-            setInt( addr, bc.bytes, tp.c);
+            setInt(addr, bc.bytes, tp.c);
         }
 
-        if ( !fmapContainsName(bc.funcMap, "init") ) {
+        if (!fmapContainsName(bc.funcMap, "init")) {
             printError("build. init function is not defined.", null);
             return false;
         }
-        if ( !fmapContainsName(bc.funcMap, "run")) {
+        if (!fmapContainsName(bc.funcMap, "run")) {
             printError("build. \"run\" function is not defined.", null);
             return false;
         }
 
-        script.initPoint = bc.funcMap.get( getFunctionId( "init", (byte)0) ).address;
-        script.runPoint = bc.funcMap.get( getFunctionId( "run", (byte)0) ).address;
+        script.initPoint = bc.funcMap.get(getFunctionId("init", (byte) 0)).address;
+        script.runPoint = bc.funcMap.get(getFunctionId("run", (byte) 0)).address;
         script.numOfReg = bc.rmap.idx + 1;
 
-        script.bytes = new byte[ bc.bytes.size ];
-        for(int i = 0; i < bc.bytes.size; i++ )
+        script.bytes = new byte[bc.bytes.size];
+        for (int i = 0; i < bc.bytes.size; i++)
             script.bytes[i] = bc.bytes.get(i);
-        if ( bc.strings.size > 0 ) {
-            script.strings = new String[ bc.strings.size ];
-            for ( int i = 0; i < bc.strings.size; i++)
+        if (bc.strings.size > 0) {
+            script.strings = new String[bc.strings.size];
+            for (int i = 0; i < bc.strings.size; i++)
                 script.strings[i] = bc.strings.get(i);
         }
-        if ( verboseLevel > 0)
+        if (verboseLevel > 0)
             printMsg("build.success.", bc);
-        return true;
+
+        return !optimize || Optimizer.optimize(script);
     }
 
     static String readDefinitionToken(String firstToken,  BuildContext bc ) {
@@ -807,11 +743,10 @@ public class Builder {
         putFunction(bc.funcMap, bc.thisFunc);
 
         for ( int i = 0; i < bc.thisFunc.numOfArg; i ++ ) {
-            bc.putOp(Def.POPRV);
-            bc.putOp(Def.SETLV);
-            bc.putOp(Def.DTS_VAR);
-            putInt( bc.thisFunc.numOfArg - i - 1, bc.bytes );
-            bc.putOp(Def.OP_ASSIGN);
+
+            bc.putOp( Def.POPVAR );
+            bc.putInt( bc.thisFunc.numOfArg - i - 1);
+
         }
 
         int secSize = bc.bytes.size;
@@ -949,7 +884,7 @@ public class Builder {
 
                 if ( token.equals("continue") ) {
                     sbc.bc.putOp(Def.JUMP);
-                    putInt( sbc.continuePos, sbc.bc.bytes );
+                    sbc.bc.putInt( sbc.continuePos );
                     continue;
                 }
             }
@@ -1030,7 +965,7 @@ public class Builder {
             if ( ! buildSection(vmap, true, subSbc ) )
                 return false;
             sbc.bc.putOp(Def.JUMP);
-            putInt( loopStartPos, sbc.bc.bytes );
+            sbc.bc.putInt(loopStartPos );
             setInt( sbc.bc.bytes.size, sbc.bc.bytes, exitAddrPos );
 
             while ( !subSbc.breakPosStack.isEmpty() ) {
@@ -1094,7 +1029,7 @@ public class Builder {
                 return false;
             }
             sbc.bc.putOp(Def.JUMP);
-            putInt( cmprSecPos, sbc.bc.bytes );
+            sbc.bc.putInt(cmprSecPos );
             setInt( sbc.bc.bytes.size, sbc.bc.bytes, loopInAddrPos );
 
             // build in-loop section
@@ -1111,7 +1046,7 @@ public class Builder {
             if ( ! buildSection( vmap, true, subSbc ) )
                 break;
             sbc.bc.putOp(Def.JUMP);
-            putInt( iterSecAddrPos, sbc.bc.bytes );
+            sbc.bc.putInt(iterSecAddrPos );
             setInt(sbc.bc.bytes.size, sbc.bc.bytes, exitAddrPos);
 
             while ( !subSbc.breakPosStack.isEmpty() ) {
@@ -1159,7 +1094,7 @@ public class Builder {
                 return false;
             }
             sbc.bc.putOp(Def.JUMP);
-            putInt(sbc.bc.bytes.size+4, sbc.bc.bytes);
+            sbc.bc.putInt(sbc.bc.bytes.size+4);
             setInt(sbc.bc.bytes.size, sbc.bc.bytes, posJmpF);
             return true;
         }
@@ -1701,7 +1636,7 @@ public class Builder {
                 }
                 if ( verboseLevel > 1 )
                     printMsg("      cS>. fcall: " + fname + " addr: " + addr + " arg cntr: " + ecc.fcallArgCntr, ecc.bc);
-                putInt(addr, ecc.bc.bytes);
+                ecc.bc.putInt(addr);
                 ecc.bc.bytes.add( ecc.fcallArgCntr );
 
                 if ( ecc.hasOperators() && !ecc.bc.isFuncReturnable( fname, ecc.fcallArgCntr ) ) {
@@ -1825,7 +1760,7 @@ public class Builder {
 
         if ( properties.containsKey( token ) ) {
             ecc.bc.putOp(Def.DTS_PROP_CODE);
-            putInt( properties.get( token), ecc.bc.bytes);
+            ecc.bc.putInt( properties.get( token) );
             return true;
         }
 
@@ -1841,7 +1776,7 @@ public class Builder {
             else
                 ecc.bc.strings.add( token.substring( 1, token.length() - 1) );
             ecc.bc.putOp(Def.DTS_STRING);
-            putInt(ecc.bc.strings.size - 1, ecc.bc.bytes);
+            ecc.bc.putInt(ecc.bc.strings.size - 1);
             return true;
         }
 
@@ -1874,7 +1809,7 @@ public class Builder {
             } else {
                 int n = Integer.valueOf(token);
                 ecc.bc.putOp(Def.DTS_INT);
-                putInt(n, ecc.bc.bytes);
+                ecc.bc.putInt(n);
             }
             return true;
         } catch ( NumberFormatException e ) {
@@ -1901,7 +1836,7 @@ public class Builder {
             return false;
         }
         ecc.bc.putOp(flag);
-        putInt(idx, ecc.bc.bytes);
+        ecc.bc.putInt(idx);
 
         return true;
     }

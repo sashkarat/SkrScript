@@ -95,12 +95,12 @@ public class Engine {
     }
 
     public static boolean printError( String msg, RunContext rc ) {
-        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + " " + msg);
+        System.err.println("Script Run Error "+ ((rc != null) ? ("<" + (rc.opPos) + ">: "):"") + " " + msg);
         return false;
     }
 
     public static boolean printError( String tag, String msg, RunContext rc ) {
-        System.err.println("Script Run Error "+ "<" + (rc.opPos) + ">: " + tag + " " + msg);
+        System.err.println("Script Run Error "+ ((rc != null) ? ("<" + (rc.opPos) + ">: "):"") + tag + " " + msg);
         return false;
     }
 
@@ -128,7 +128,7 @@ public class Engine {
     }
 
     protected static void printMsg( String tag, String msg, RunContext rc ) {
-        System.out.println("Script Run Msg " + "<" + (rc.opPos) + ">: " + tag + " " + msg);
+        System.out.println("Script Run Msg " + ((rc != null) ? ("<" + (rc.opPos) + ">: "):"") + tag + " " + msg);
     }
 
 

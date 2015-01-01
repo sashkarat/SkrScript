@@ -260,6 +260,10 @@ public class RunContext {
                 case Def.PUSHLV:
                     rc.valueStack.push( rc.l );
                     continue;
+                case Def.PUSHLVRV:
+                    rc.valueStack.push( rc.l );
+                    rc.valueStack.push( rc.r );
+                    continue;
                 case Def.JUMP:
                     rc.pos = rc.readInt();
                     continue;
@@ -287,10 +291,27 @@ public class RunContext {
                 case Def.LVTORV:
                     rc.r.set( rc.l );
                     continue;
+                case Def.LVTORVPOPLV:
+                    rc.r.set( rc.l );
+                    rc.valueStack.pop( rc.l );
+                    continue;
                 case Def.RVTOLV:
                     rc.l.set( rc.r );
                     continue;
-
+                case Def.POPVAR:
+                    rc.valueStack.pop( rc.vars.get( rc.readInt() ) );
+                    continue;
+                case Def.RVTOVAR:
+                    byte dts = rc.nextByte();
+                    int idx = rc.readInt();
+                    if ( dts == Def.DTS_VAR ) {
+                        rc.vars.get( idx ).set( rc.r.obtain( rc ) );
+                        continue;
+                    } else if ( dts == Def.DTS_REG ) {
+                        rc.regs.get( idx ).set( rc.r.obtain( rc ) );
+                        continue;
+                    }
+                    return Engine.printError("run", " opCode <RVTOVAR>: invalid dts ", rc);
             }
 
 

@@ -52,19 +52,15 @@ public class Dumper {
                         out(address + "] ");
                     out(" AN<" + rc.nextByte() + ">");
                     break;
-                case Def.DECVARNUM:
-                    out(" [" + rc.readInt() + "] ");
-                    break;
+                case Def.RVTOVAR:
                 case Def.SETRV:
+                case Def.SETLV:
                     dumpValue( rc );
                     break;
-                case Def.SETLV:
-                    dumpValue(rc);
-                    break;
+                case Def.DECVARNUM:
                 case Def.JUMP:
-                    out(" [" + rc.readInt() + "]");
-                    break;
                 case Def.JUMPF:
+                case Def.POPVAR:
                     out(" [" + rc.readInt() + "]");
                     break;
             }
@@ -149,6 +145,14 @@ public class Dumper {
                 return "LVTORV";
             case Def.RVTOLV:
                 return "RVTOLV";
+            case Def.POPVAR:
+                return "POPVAR";
+            case Def.PUSHLVRV:
+                return "PUSHLVRV";
+            case Def.LVTORVPOPLV:
+                return "LVTORVPOPLV";
+            case Def.RVTOVAR:
+                return "RVTOVAR";
             default:
                 return "<" + opCode + ">";
         }

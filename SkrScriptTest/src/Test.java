@@ -114,8 +114,7 @@ public class Test {
 
     public static void main( String [] arg ) throws IOException, EvalError {
 
-        String txt = readFileFromData("testIter.script");
-        txt = readFileFromData("testHeartCurve.script");
+        String txt = readFileFromData("test.script");
 
         EngineTestExtension ee = new EngineTestExtension();
         ee.init();
@@ -124,13 +123,14 @@ public class Test {
 
 //        Builder.setVerboseLevel( 1 );
 
-        if ( ! Builder.build(txt, script) )
+        if ( ! Builder.build(txt, script, true ) ) {
+            System.err.println(" build failed.");
             return;
+        }
         Slot slot = new Slot();
         slot.setScript(script);
 
 //        Dumper.dump(script);
-//        ScriptDumper.dumpBytes( SkrScript, " ");
 
         Engine engine = new Engine();
         engine.setExtension( ee );
@@ -138,10 +138,34 @@ public class Test {
 //        engine.setOutEnabled(true);
 
         System.out.println("Init point: " + slot.getScript().initPoint);
+        System.out.println("Run point: " + slot.getScript().runPoint);
+//
+//        // execution tests
+//
+//        engine.init( slot );
 
-        // execution tests
+        performanceTest( engine, "testIter.script");
+//        performanceTest( engine, "testHeartCurve.script");
 
-        System.out.println("Execution tests");
+        System.out.println(" all done. bye");
+    }
+
+
+    private static void performanceTest( Engine engine, String fileName ) throws IOException, EvalError {
+
+        System.out.println("Performance tests");
+
+        String txt = readFileFromData(fileName);
+        Script script = new Script();
+
+//        Builder.setVerboseLevel( 1 );
+
+        if ( ! Builder.build(txt, script, true ) ) {
+            System.err.println(" build failed.");
+            return;
+        }
+        Slot slot = new Slot();
+        slot.setScript(script);
 
         float refDur = referenceTest();
 
@@ -157,7 +181,9 @@ public class Test {
         System.out.println("SKR cost: " + skrCost );
         System.out.println("BSH cost: " + bshCost );
         System.out.println("BSH/SKR cost: " + bshSkrCost );
+
     }
+
 
     private static long skrSkriptTest(Engine engine, Slot slot ) {
 
@@ -175,8 +201,8 @@ public class Test {
         long start = System.nanoTime();
 
         //payload code begin
-//        refIter();
-        refHeartCurve();
+        refIter();
+//        refHeartCurve();
         //payload code end
 
         start = System.nanoTime() - start;
@@ -191,7 +217,7 @@ public class Test {
 
     private static long beanShellTest() throws IOException, EvalError {
         String txt = readFileFromData( "testIter.bsh" );
-        txt = readFileFromData( "testHeartCurve.bsh" );
+//        txt = readFileFromData( "testHeartCurve.bsh" );
 
         Interpreter intr = new Interpreter();
 
@@ -241,10 +267,10 @@ public class Test {
     private static int refIter() {
         int acum = 0;
         int acum2 = 0;
-        int z = 100;
+        int z = 1000;
         while ( z > 0 ) {
             acum = acum2 = 0;
-            for (int i = 0; i < 1000; i = i + 1) {
+            for (int i = 0; i < 10000; i = i + 1) {
                 acum = acum + i;
                 acum2 = -acum + i;
             }
