@@ -94,6 +94,7 @@ public class Def {
     protected static final byte PUSHLVRV           = 46; // push lval and rval
     protected static final byte LVTORVPOPLV        = 47; // copies lval to rval and pop lval
     protected static final byte RVTOVAR            = 48; // set rval to var or reg
+    protected static final byte LVTOVAR            = 49; // set lval to var or reg
 
 
 

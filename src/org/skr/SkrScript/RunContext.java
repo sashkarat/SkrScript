@@ -211,6 +211,19 @@ public class RunContext {
 //    private static long acuum = 0;
 //    private static long s;
 
+    protected static boolean valueToVar(Value v, RunContext rc ) {
+        byte dts = rc.nextByte();
+        int idx = rc.readInt();
+        if ( dts == Def.DTS_VAR ) {
+            rc.vars.get( idx ).set( v.obtain( rc ) );
+            return true;
+        } else if ( dts == Def.DTS_REG ) {
+            rc.regs.get( idx ).set( v.obtain( rc ) );
+            return true;
+        }
+        return false;
+    }
+
     protected static boolean run( int entryPoint, RunContext rc ) {
 
         rc.pos = entryPoint;
@@ -302,16 +315,13 @@ public class RunContext {
                     rc.valueStack.pop( rc.vars.get( rc.readInt() ) );
                     continue;
                 case Def.RVTOVAR:
-                    byte dts = rc.nextByte();
-                    int idx = rc.readInt();
-                    if ( dts == Def.DTS_VAR ) {
-                        rc.vars.get( idx ).set( rc.r.obtain( rc ) );
+                    if ( valueToVar( rc.r, rc ) )
                         continue;
-                    } else if ( dts == Def.DTS_REG ) {
-                        rc.regs.get( idx ).set( rc.r.obtain( rc ) );
-                        continue;
-                    }
                     return Engine.printError("run", " opCode <RVTOVAR>: invalid dts ", rc);
+                case Def.LVTOVAR:
+                    if ( valueToVar( rc.l, rc ) )
+                        continue;
+                    return Engine.printError("run", " opCode <LVTOVAR>: invalid dts ", rc);
             }
 
 

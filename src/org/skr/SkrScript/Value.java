@@ -6,8 +6,6 @@ import java.util.Objects;
  * Created by rat on 06.12.14.
  */
 public class Value {
-    private boolean bval;
-
     private Object val = null;
     private byte dts = Def.DTS_NULL;
 
@@ -117,7 +115,7 @@ public class Value {
     }
 
     public void setAsBool(Boolean b ) {
-        bval = b;
+        val = b;
         dts = Def.DTS_BOOL;
     }
 
@@ -143,7 +141,7 @@ public class Value {
 
     public Boolean asBool( RunContext rc ) {
         if ( dts == Def.DTS_BOOL )
-            return bval;
+            return (Boolean) val;
         if ( dts == Def.DTS_INT )
             return (Integer)val != 0;
         if ( dts == Def.DTS_FLOAT )

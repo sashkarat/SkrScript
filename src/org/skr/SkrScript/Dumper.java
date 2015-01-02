@@ -53,6 +53,7 @@ public class Dumper {
                     out(" AN<" + rc.nextByte() + ">");
                     break;
                 case Def.RVTOVAR:
+                case Def.LVTOVAR:
                 case Def.SETRV:
                 case Def.SETLV:
                     dumpValue( rc );
@@ -153,6 +154,8 @@ public class Dumper {
                 return "LVTORVPOPLV";
             case Def.RVTOVAR:
                 return "RVTOVAR";
+            case Def.LVTOVAR:
+                return "LVTOVAR";
             default:
                 return "<" + opCode + ">";
         }

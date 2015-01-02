@@ -16,8 +16,6 @@ public class Optimizer {
             this.init = init;
             this.run = run;
         }
-
-
     }
 
     static class OptimizerContext {
@@ -232,12 +230,12 @@ public class Optimizer {
     public static boolean optimize(Script script) {
 
         OptimizerContext oc = new OptimizerContext(script);
-        return optimizeLevel0(oc) && optimizeLevel1(oc);
+        return optimize0(oc) && optimize1(oc) && optimize2(oc);
 
     }
 
 
-    static boolean optimizeLevel0( OptimizerContext oc ) {
+    static boolean optimize0(OptimizerContext oc) {
         if ( !decompile( oc ) )
             return false;
 
@@ -335,7 +333,7 @@ public class Optimizer {
         return assemble( oc );
     }
 
-    static boolean optimizeLevel1( OptimizerContext oc ) {
+    static boolean optimize1(OptimizerContext oc) {
         if ( !decompile( oc ) )
             return false;
 
@@ -387,11 +385,32 @@ public class Optimizer {
                 i--;
                 continue;
             }
-
-
         }
 
         return assemble( oc );
     }
 
+
+    static boolean optimize2(OptimizerContext oc) {
+        if ( !decompile( oc ) )
+            return false;
+
+        int i = -1;
+        while(++i < opCodes.size() ) {
+            OpCode opCode = opCodes.get( i );
+            if ( i == 0)
+                continue;
+            OpCode pOpCode = opCodes.get( i - 1 );
+
+            if ( pOpCode.code == Def.LVTORV && opCode.code == Def.RVTOVAR ) {
+                opCode.code = Def.LVTOVAR;
+                opCodes.remove( i - 1 );
+                i--;
+                continue;
+            }
+
+        }
+
+        return assemble( oc );
+    }
 }
