@@ -189,8 +189,7 @@ public class Operators {
         }
         if ( rc.l.isNull() )
             return rc.r.isNull();
-
-        rc.l.setAsBool(rc.l.val().equals(rc.r.val()));
+        rc.l.setAsBool(rc.l.val().equals( rc.r.as(rc.l.dts(), rc) ));
         return true;
     }
 
@@ -205,7 +204,7 @@ public class Operators {
         if ( rc.l.isNull() )
             return !rc.r.isNull();
 
-        rc.l.setAsBool( ! rc.l.val().equals( rc.r.val() ) );
+        rc.l.setAsBool( ! rc.l.val().equals( rc.r.as(rc.l.dts(), rc) ) );
         return true;
     }
 

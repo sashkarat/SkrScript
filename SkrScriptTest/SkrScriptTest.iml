@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="SkrScript" level="project" />
     <orderEntry type="library" name="bsh-2.0b4" level="project" />
+    <orderEntry type="library" name="libSkrScript" level="project" />
   </component>
 </module>

@@ -1,7 +1,5 @@
 package org.skr.SkrScript;
 
-import java.util.Objects;
-
 /**
  * Created by rat on 06.12.14.
  */
@@ -173,25 +171,32 @@ public class Value {
         return (Integer) rc.extension.cast( this, Def.DTS_INT, rc );
     }
 
+    private static boolean isBaseDts(byte dts) {
+        return dts <= Def.DTS_INT && dts >= Def.DTS_PROP_CODE;
+    }
+
     public Object as(byte dts, RunContext rc ) {
-        switch ( dts ) {
-            case Def.DTS_INT:
-                return asInt( rc );
-            case Def.DTS_FLOAT:
-                return asFloat( rc );
-            case Def.DTS_BOOL:
-                return asBool( rc );
-            case Def.DTS_STRING:
-                return asString();
-            case Def.DTS_TYPE:
-                return asType();
-            case Def.DTS_PROP_CODE:
-                return asPropertyCode();
-            default:
-                if ( val == null || rc.extension == null )
-                    return null;
-                return rc.extension.cast( this, dts, rc);
+        if ( this.dts == dts )
+            return val;
+        if ( isBaseDts(dts) ) {
+            switch ( dts ) {
+                case Def.DTS_INT:
+                    return asInt(rc);
+                case Def.DTS_FLOAT:
+                    return asFloat(rc);
+                case Def.DTS_BOOL:
+                    return asBool(rc);
+                case Def.DTS_STRING:
+                    return asString();
+                case Def.DTS_TYPE:
+                    return asType();
+                case Def.DTS_PROP_CODE:
+                    return asPropertyCode();
+            }
         }
+        if ( val == null || rc.extension == null )
+            return null;
+        return rc.extension.cast( this, dts, rc);
     }
 
     public String asString() {

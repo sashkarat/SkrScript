@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SkrScript.iml" filepath="$PROJECT_DIR$/SkrScript.iml" />
       <module fileurl="file://$PROJECT_DIR$/SkrScriptTest/SkrScriptTest.iml" filepath="$PROJECT_DIR$/SkrScriptTest/SkrScriptTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libSkrScript.iml" filepath="$PROJECT_DIR$/libSkrScript.iml" />
     </modules>
   </component>
 </project>

@@ -352,7 +352,7 @@ public class Builder {
                 printError("addVar. Wrong variable name: " + name , bc);
                 return false;
             }
-            if ( map.containsKey( name ) ) {
+            if ( map.containsKey( name ) || bc.rmap.isVariable( name ) ) {
                printError("addVar. Variable: " + name + " is already defined.", bc);
                 return false;
             }
